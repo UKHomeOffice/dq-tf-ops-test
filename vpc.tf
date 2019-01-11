@@ -66,11 +66,11 @@ resource "aws_route" "apps" {
   vpc_peering_connection_id = "${var.vpc_peering_connection_ids["ops_and_apps"]}"
 }
 
-resource "aws_route" "acp_vpn" {
-  route_table_id            = "${aws_route_table.ops_route_table.id}"
-  destination_cidr_block    = "${var.route_table_cidr_blocks["acp_vpn"]}"
-  vpc_peering_connection_id = "${var.vpc_peering_connection_ids["ops_and_acpvpn"]}"
-}
+#resource "aws_route" "acp_vpn" {
+#  route_table_id            = "${aws_route_table.ops_route_table.id}"
+#  destination_cidr_block    = "${var.route_table_cidr_blocks["acp_vpn"]}"
+#  vpc_peering_connection_id = "${var.vpc_peering_connection_ids["ops_and_acpvpn"]}"
+#}
 
 resource "aws_route" "nat" {
   route_table_id         = "${aws_route_table.ops_route_table.id}"

@@ -41,7 +41,7 @@ class TestE2E(unittest.TestCase):
               route_table_cidr_blocks   = {
                 peering_cidr = "1234"
                 apps_cidr = "1234"
-                acp_vpn = "1234"
+                #acp_vpn = "1234"
                 acp_prod = "1234"
                 acp_ops = "1234"
                 acp_cicd = "1234"
