@@ -14,64 +14,64 @@ resource "aws_route_table_association" "apps_route_table_association" {
   route_table_id = "${aws_route_table.ops_route_table.id}"
 }
 
-resource "aws_instance" "win" {
-  instance_type               = "t2.micro"
-  ami                         = "${data.aws_ami.win.id}"
-  key_name                    = "test_instance"
-  associate_public_ip_address = true
+#resource "aws_instance" "win" {
+#  instance_type               = "t2.micro"
+#  ami                         = "${data.aws_ami.win.id}"
+#  key_name                    = "test_instance"
+#  associate_public_ip_address = true
 
-  iam_instance_profile = "${var.ad_writer_instance_profile_name}"
-  subnet_id            = "${aws_subnet.ad_subnet.id}"
+#  iam_instance_profile = "${var.ad_writer_instance_profile_name}"
+#  subnet_id            = "${aws_subnet.ad_subnet.id}"
 
-  vpc_security_group_ids = [
-    "${aws_security_group.sg.id}",
-  ]
+#  vpc_security_group_ids = [
+#    "${aws_security_group.sg.id}",
+#  ]
 
-  count = "${local.windows}"
+#  count = "${local.windows}"
 
-  tags {
-    Name = "ad-win${count.index}-${local.naming_suffix}"
-  }
-}
+#  tags {
+#    Name = "ad-win${count.index}-${local.naming_suffix}"
+#  }
+#}
 
 locals {
   windows = 0
   rhel    = 0
 }
 
-resource "aws_ssm_association" "win" {
-  name        = "${var.ad_aws_ssm_document_name}"
-  instance_id = "${element(aws_instance.win.*.id, count.index)}"
-  count       = "${local.windows}"
-}
+#resource "aws_ssm_association" "win" {
+#  name        = "${var.ad_aws_ssm_document_name}"
+#  instance_id = "${element(aws_instance.win.*.id, count.index)}"
+#  count       = "${local.windows}"
+#}
 
-resource "aws_instance" "another_rhel" {
-  instance_type = "t2.micro"
-  ami           = "${data.aws_ami.rhel.id}"
-  subnet_id     = "${aws_subnet.ad_subnet.id}"
-  key_name      = "test_instance"
+#resource "aws_instance" "another_rhel" {
+#  instance_type = "t2.micro"
+#  ami           = "${data.aws_ami.rhel.id}"
+#  subnet_id     = "${aws_subnet.ad_subnet.id}"
+#  key_name      = "test_instance"
 
-  vpc_security_group_ids = [
-    "${aws_security_group.sg.id}",
-  ]
+#  vpc_security_group_ids = [
+#    "${aws_security_group.sg.id}",
+#  ]
 
-  user_data = <<EOF
-#!/bin/bash
-yum -y install sssd realmd krb5-workstation adcli samba-common-tools expect
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-systemctl reload sshd
-systemctl start sssd.service
-echo "%Domain\\ Admins@dq.homeoffice.gov.uk ALL=(ALL:ALL) ALL" >>  /etc/sudoers
-expect -c "spawn realm join -U admin@dq.homeoffice.gov.uk DQ.HOMEOFFICE.GOV.UK; expect \"*?assword for admin@DQ.HOMEOFFICE.GOV.UK:*\"; send -- \"${var.adminpassword}\r\" ; expect eof"
-reboot
-EOF
+#  user_data = <<EOF
+##!/bin/bash
+#yum -y install sssd realmd krb5-workstation adcli samba-common-tools expect
+#sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+#systemctl reload sshd
+#systemctl start sssd.service
+#echo "%Domain\\ Admins@dq.homeoffice.gov.uk ALL=(ALL:ALL) ALL" >>  /etc/sudoers
+#expect -c "spawn realm join -U admin@dq.homeoffice.gov.uk DQ.HOMEOFFICE.GOV.UK; expect \"*?assword for admin@DQ.HOMEOFFICE.GOV.UK:*\"; send -- \"${var.adminpassword}\r\" ; expect eof"
+#reboot
+#EOF
+#
+#  count = "${local.rhel}"
 
-  count = "${local.rhel}"
-
-  tags {
-    Name = "ad-rhel${count.index}-${local.naming_suffix}"
-  }
-}
+#  tags {
+#    Name = "ad-rhel${count.index}-${local.naming_suffix}"
+#  }
+#}
 
 resource "aws_security_group" "sg" {
   vpc_id = "${aws_vpc.opsvpc.id}"
