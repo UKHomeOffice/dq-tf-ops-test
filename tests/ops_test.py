@@ -32,7 +32,7 @@ class TestE2E(unittest.TestCase):
               bastion2_windows_ip       = "1.2.3.4"
               ad_aws_ssm_document_name  = "1234"
               ad_writer_instance_profile_name = "1234"
-              adminpassword             = "1234"
+              #adminpassword             = "1234"
               log_archive_s3_bucket     = "abcd"
               s3_bucket_name            = "dq-test"
               management_access         = "10.1.1.1/32"

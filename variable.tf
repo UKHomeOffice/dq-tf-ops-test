@@ -6,7 +6,7 @@ variable "az" {}
 variable "naming_suffix" {}
 variable "ad_aws_ssm_document_name" {}
 variable "ad_writer_instance_profile_name" {}
-variable "adminpassword" {}
+#variable "adminpassword" {}
 variable "log_archive_s3_bucket" {}
 
 variable "vpc_peering_connection_ids" {
