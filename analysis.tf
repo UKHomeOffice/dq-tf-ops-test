@@ -1,43 +1,43 @@
-data "aws_ami" "analysis_ami" {
-  most_recent = true
+#data "aws_ami" "analysis_ami" {
+#  most_recent = true
 
-  filter {
-    name = "name"
+#  filter {
+#    name = "name"
 
-    values = [
-      "dq-ops-httpd*",
-    ]
-  }
+#    values = [
+#      "dq-ops-httpd*",
+#    ]
+#  }
 
-  owners = [
-    "093401982388",
-  ]
-}
+#  owners = [
+#    "093401982388",
+#  ]
+#}
 
-resource "aws_instance" "analysis" {
-  key_name                    = "${var.key_name}"
-  ami                         = "${data.aws_ami.analysis_ami.id}"
-  instance_type               = "m4.xlarge"
-  iam_instance_profile        = "${aws_iam_instance_profile.httpd_server_instance_profile.id}"
-  vpc_security_group_ids      = ["${aws_security_group.analysis.id}"]
-  associate_public_ip_address = true
-  monitoring                  = true
-  private_ip                  = "${var.analysis_instance_ip}"
-  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
-  user_data                   = "${var.s3_bucket_name}"
+#resource "aws_instance" "analysis" {
+#  key_name                    = "${var.key_name}"
+#  ami                         = "${data.aws_ami.analysis_ami.id}"
+#  instance_type               = "m4.xlarge"
+#  iam_instance_profile        = "${aws_iam_instance_profile.httpd_server_instance_profile.id}"
+#  vpc_security_group_ids      = ["${aws_security_group.analysis.id}"]
+#  associate_public_ip_address = true
+#  monitoring                  = true
+#  private_ip                  = "${var.analysis_instance_ip}"
+#  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+#  user_data                   = "${var.s3_bucket_name}"
 
-  tags = {
-    Name = "ec2-analysis-${local.naming_suffix}"
-  }
+#  tags = {
+#    Name = "ec2-analysis-${local.naming_suffix}"
+#  }
 
-  lifecycle {
-    prevent_destroy = true
+#  lifecycle {
+#    prevent_destroy = true
 
-    ignore_changes = [
-      "ami",
-    ]
-  }
-}
+#    ignore_changes = [
+#      "ami",
+#    ]
+#  }
+#}
 
 resource "aws_security_group" "analysis" {
   vpc_id = "${aws_vpc.opsvpc.id}"
@@ -75,10 +75,10 @@ resource "aws_security_group" "analysis" {
   }
 }
 
-resource "aws_eip" "analysis_eip" {
-  instance = "${aws_instance.analysis.id}"
-  vpc      = true
-}
+#resource "aws_eip" "analysis_eip" {
+#  instance = "${aws_instance.analysis.id}"
+#  vpc      = true
+#}
 
 resource "aws_route" "apps-tab" {
   route_table_id            = "${aws_route_table.ops_public_table.id}"
@@ -231,6 +231,6 @@ variable "management_access" {}
 
 variable "s3_bucket_name" {}
 
-output "analysis_eip" {
-  value = "${aws_eip.analysis_eip.public_ip}"
-}
+#output "analysis_eip" {
+#  value = "${aws_eip.analysis_eip.public_ip}"
+#}
