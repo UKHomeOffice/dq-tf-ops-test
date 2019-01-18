@@ -13,29 +13,29 @@
 #  }
 #}
 
-#resource "aws_instance" "bastion_win" {
-#  key_name                    = "${var.key_name}"
-#  ami                         = "${data.aws_ami.win.id}"
-#  instance_type               = "t2.medium"
-#  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-#  iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
-#  subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-#  private_ip                  = "${var.bastion_windows_ip}"
-#  associate_public_ip_address = false
-#  monitoring                  = true
+resource "aws_instance" "bastion_win" {
+  key_name                    = "${var.key_name}"
+  ami                         = "${data.aws_ami.win.id}"
+  instance_type               = "t2.medium"
+  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
+  iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
+  subnet_id                   = "${aws_subnet.OPSSubnet.id}"
+  private_ip                  = "${var.bastion_windows_ip}"
+  associate_public_ip_address = false
+  monitoring                  = true
 
-# lifecycle {
-#    prevent_destroy = true
-#
-#    ignore_changes = [
-#      "ami",
-#    ]
-#  }
+ lifecycle {
+    prevent_destroy = true
 
-#  tags = {
-#    Name = "bastion-win-${local.naming_suffix}"
-#  }
-#}
+    ignore_changes = [
+      "ami",
+    ]
+  }
+
+  tags = {
+    Name = "bastion-win-${local.naming_suffix}"
+  }
+}
 
 #resource "aws_instance" "bastion_win2" {
 #  key_name                    = "${var.key_name}"
@@ -61,10 +61,10 @@
 #  }
 #}
 
-#resource "aws_ssm_association" "bastion_win" {
-#  name        = "${var.ad_aws_ssm_document_name}"
-#  instance_id = "${aws_instance.bastion_win.id}"
-#}
+resource "aws_ssm_association" "bastion_win" {
+  name        = "${var.ad_aws_ssm_document_name}"
+  instance_id = "${aws_instance.bastion_win.id}"
+}
 
 resource "aws_security_group" "Bastions" {
   vpc_id = "${aws_vpc.opsvpc.id}"

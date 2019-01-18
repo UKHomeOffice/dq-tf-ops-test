@@ -1,18 +1,18 @@
-#data "aws_ami" "win" {
-#  most_recent = true
+data "aws_ami" "win" {
+  most_recent = true
 
-#  filter {
-#    name = "name"
+  filter {
+    name = "name"
 
-#    values = [
-#      "dq-ops-win-*",
-#    ]
-#  }
+    values = [
+      "dq-ops-win-*",
+    ]
+  }
 
-#  owners = [
-#    "093401982388",
-#  ]
-#}
+  owners = [
+    "797728447925",
+  ]
+}
 
 data "aws_availability_zones" "available" {}
 
