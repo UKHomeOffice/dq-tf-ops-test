@@ -27,7 +27,8 @@ resource "aws_instance" "bastion_win" {
   monitoring                  = true
 
  lifecycle {
-    prevent_destroy = true
+    #prevent_destroy = true
+    #prevent_destroy = false 
 
     ignore_changes = [
       "ami",
