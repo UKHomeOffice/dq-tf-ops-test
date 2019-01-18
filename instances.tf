@@ -19,9 +19,11 @@ resource "aws_instance" "bastion_win" {
   instance_type               = "t2.medium"
   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
   iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
-  subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-  private_ip                  = "${var.bastion_windows_ip}"
-  associate_public_ip_address = false
+  #subnet_id                   = "${aws_subnet.OPSSubnet.id}"
+  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+  #private_ip                  = "${var.bastion_windows_ip}"
+  associate_public_ip_address = true
+  #associate_public_ip_address = false 
   monitoring                  = true
 
  lifecycle {
@@ -77,14 +79,14 @@ resource "aws_security_group" "Bastions" {
     from_port   = 3389
     to_port     = 3389
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["82.17.133.48/32"]
   }
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["82.17.133.48/32"]
   }
 
   egress {
