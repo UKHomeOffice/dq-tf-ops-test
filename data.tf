@@ -32,18 +32,18 @@ data "aws_availability_zones" "available" {}
 #  ]
 #}
 
-#data "aws_ami" "bastion_linux" {
-#  most_recent = true
+data "aws_ami" "bastion_linux" {
+  most_recent = true
 
-#  filter {
-#    name = "name"
+  filter {
+    name = "name"
 
-#    values = [
-#      "dq-linux-bastion*",
-#    ]
-#  }
+    values = [
+      "dq-linux-bastion*",
+    ]
+  }
 
-#  owners = [
-#    "self",
-#  ]
-#}
+  owners = [
+    "self",
+  ]
+}
