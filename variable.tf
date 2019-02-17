@@ -61,3 +61,8 @@ variable "linux_bastion_key_name" {
   default     = "linux_bastion"
 }
 
+variable "linux_tools_bastion_key_name" {
+  description = "Default SSH key name for linux bastion tools EC2 instances"
+  default     = "linux_tools_bastion"
+}
+
