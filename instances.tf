@@ -28,7 +28,7 @@ resource "aws_instance" "bastion_tools_linux" {
   key_name                    = "${var.linux_tools_bastion_key_name}"
   ami                         = "${data.aws_ami.bastion_linux.id}"
   instance_type               = "t2.medium"
-  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
+  vpc_security_group_ids      = ["${aws_security_group.BastionsTools.id}"]
   subnet_id                   = "${aws_subnet.OPSSubnet.id}"
   associate_public_ip_address = false
   monitoring                  = true
@@ -122,6 +122,28 @@ resource "aws_security_group" "Bastions" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["82.17.133.48/32"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "BastionsTools" {
+  vpc_id = "${aws_vpc.opsvpc.id}"
+
+  tags {
+    Name = "sg-bastions-${local.naming_suffix}"
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    security_groups = ["${aws_security_group.Bastions.id}"]
   }
 
   egress {
