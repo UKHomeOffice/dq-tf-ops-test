@@ -55,3 +55,9 @@ variable "key_name" {
   description = "Default SSH key name for EC2 instances"
   default     = "test_instance"
 }
+
+variable "linux_bastion_key_name" {
+  description = "Default SSH key name for linux bastion EC2 instances"
+  default     = "linux_bastion"
+}
+
