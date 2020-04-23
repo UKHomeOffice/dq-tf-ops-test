@@ -1,18 +1,18 @@
 resource "aws_instance" "bastion_linux" {
-  key_name                    = "${var.linux_bastion_key_name}"
-  ami                         = "${data.aws_ami.bastion_linux.id}"
-  instance_type               = "t2.medium"
-  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
+  key_name               = "${var.linux_bastion_key_name}"
+  ami                    = "${data.aws_ami.bastion_linux.id}"
+  instance_type          = "t2.medium"
+  vpc_security_group_ids = ["${aws_security_group.Bastions.id}"]
   #subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+  subnet_id = "${aws_subnet.ops_public_subnet.id}"
   #private_ip                  = "${var.bastion_linux_ip}"
   associate_public_ip_address = true
   #associate_public_ip_address = false
-  monitoring                  = true
+  monitoring = true
 
   lifecycle {
     #prevent_destroy = true
-    #prevent_destroy = false 
+    #prevent_destroy = false
 
     ignore_changes = [
       "ami",
@@ -35,7 +35,7 @@ resource "aws_instance" "bastion_tools_linux" {
 
   lifecycle {
     #prevent_destroy = true
-    #prevent_destroy = false 
+    #prevent_destroy = false
 
     ignore_changes = [
       "ami",
@@ -48,21 +48,21 @@ resource "aws_instance" "bastion_tools_linux" {
 }
 
 resource "aws_instance" "bastion_win" {
-  key_name                    = "${var.key_name}"
-  ami                         = "${data.aws_ami.win.id}"
-  instance_type               = "t2.medium"
-  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-  iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
+  key_name               = "${var.key_name}"
+  ami                    = "${data.aws_ami.win.id}"
+  instance_type          = "t2.medium"
+  vpc_security_group_ids = ["${aws_security_group.Bastions.id}"]
+  iam_instance_profile   = "${aws_iam_instance_profile.ops_win.id}"
   #subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+  subnet_id = "${aws_subnet.ops_public_subnet.id}"
   #private_ip                  = "${var.bastion_windows_ip}"
   associate_public_ip_address = true
-  #associate_public_ip_address = false 
-  monitoring                  = true
+  #associate_public_ip_address = false
+  monitoring = true
 
- lifecycle {
+  lifecycle {
     #prevent_destroy = true
-    #prevent_destroy = false 
+    #prevent_destroy = false
 
     ignore_changes = [
       "ami",
@@ -98,10 +98,10 @@ resource "aws_instance" "bastion_win" {
 #  }
 #}
 
-resource "aws_ssm_association" "bastion_win" {
-  name        = "${var.ad_aws_ssm_document_name}"
-  instance_id = "${aws_instance.bastion_win.id}"
-}
+# resource "aws_ssm_association" "bastion_win" {
+#   name        = "${var.ad_aws_ssm_document_name}"
+#   instance_id = "${aws_instance.bastion_win.id}"
+# }
 
 resource "aws_security_group" "Bastions" {
   vpc_id = "${aws_vpc.opsvpc.id}"
@@ -140,9 +140,9 @@ resource "aws_security_group" "BastionsTools" {
   }
 
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = ["${aws_security_group.Bastions.id}"]
   }
 

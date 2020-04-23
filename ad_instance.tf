@@ -1,18 +1,18 @@
-resource "aws_subnet" "ad_subnet" {
-  vpc_id                  = "${aws_vpc.opsvpc.id}"
-  cidr_block              = "${var.ad_subnet_cidr_block}"
-  map_public_ip_on_launch = false
-  availability_zone       = "${var.az}"
-
-  tags {
-    Name = "ad-subnet-${local.naming_suffix}"
-  }
-}
-
-resource "aws_route_table_association" "apps_route_table_association" {
-  subnet_id      = "${aws_subnet.ad_subnet.id}"
-  route_table_id = "${aws_route_table.ops_route_table.id}"
-}
+# resource "aws_subnet" "ad_subnet" {
+#   vpc_id                  = "${aws_vpc.opsvpc.id}"
+#   cidr_block              = "${var.ad_subnet_cidr_block}"
+#   map_public_ip_on_launch = false
+#   availability_zone       = "${var.az}"
+#
+#   tags {
+#     Name = "ad-subnet-${local.naming_suffix}"
+#   }
+# }
+#
+# resource "aws_route_table_association" "apps_route_table_association" {
+#   subnet_id      = "${aws_subnet.ad_subnet.id}"
+#   route_table_id = "${aws_route_table.ops_route_table.id}"
+# }
 
 #resource "aws_instance" "win" {
 #  instance_type               = "t2.micro"
@@ -73,40 +73,40 @@ locals {
 #  }
 #}
 
-resource "aws_security_group" "sg" {
-  vpc_id = "${aws_vpc.opsvpc.id}"
-
-  ingress {
-    from_port = 3389
-    to_port   = 3389
-    protocol  = "tcp"
-
-    cidr_blocks = [
-      "${var.ad_sg_cidr_ingress}",
-    ]
-  }
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-
-    cidr_blocks = [
-      "${var.ad_sg_cidr_ingress}",
-    ]
-  }
-
-  egress {
-    from_port = 0
-    protocol  = "-1"
-    to_port   = 0
-
-    cidr_blocks = [
-      "0.0.0.0/0",
-    ]
-  }
-
-  tags {
-    Name = "sg-ad-${local.naming_suffix}"
-  }
-}
+# resource "aws_security_group" "sg" {
+#   vpc_id = "${aws_vpc.opsvpc.id}"
+#
+#   ingress {
+#     from_port = 3389
+#     to_port   = 3389
+#     protocol  = "tcp"
+#
+#     cidr_blocks = [
+#       "${var.ad_sg_cidr_ingress}",
+#     ]
+#   }
+#
+#   ingress {
+#     from_port = 22
+#     to_port   = 22
+#     protocol  = "tcp"
+#
+#     cidr_blocks = [
+#       "${var.ad_sg_cidr_ingress}",
+#     ]
+#   }
+#
+#   egress {
+#     from_port = 0
+#     protocol  = "-1"
+#     to_port   = 0
+#
+#     cidr_blocks = [
+#       "0.0.0.0/0",
+#     ]
+#   }
+#
+#   tags {
+#     Name = "sg-ad-${local.naming_suffix}"
+#   }
+# }

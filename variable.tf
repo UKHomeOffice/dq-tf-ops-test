@@ -1,11 +1,11 @@
 variable "cidr_block" {}
 variable "vpc_subnet_cidr_block" {}
 variable "public_subnet_cidr_block" {}
-variable "ad_subnet_cidr_block" {}
+# variable "ad_subnet_cidr_block" {}
 variable "az" {}
 variable "naming_suffix" {}
-variable "ad_aws_ssm_document_name" {}
-variable "ad_writer_instance_profile_name" {}
+# variable "ad_aws_ssm_document_name" {}
+# variable "ad_writer_instance_profile_name" {}
 #variable "adminpassword" {}
 variable "log_archive_s3_bucket" {}
 
@@ -46,10 +46,10 @@ variable "bastion2_windows_ip" {
   description = "2nd Win bastion IP address"
 }
 
-variable "ad_sg_cidr_ingress" {
-  description = "List of CIDR block ingress to AD machines SG"
-  type        = "list"
-}
+# variable "ad_sg_cidr_ingress" {
+#   description = "List of CIDR block ingress to AD machines SG"
+#   type        = "list"
+# }
 
 variable "key_name" {
   description = "Default SSH key name for EC2 instances"
@@ -65,4 +65,3 @@ variable "linux_tools_bastion_key_name" {
   description = "Default SSH key name for linux bastion tools EC2 instances"
   default     = "linux_tools_bastion"
 }
-
