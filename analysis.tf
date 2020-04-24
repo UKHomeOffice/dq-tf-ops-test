@@ -1,43 +1,69 @@
-#data "aws_ami" "analysis_ami" {
-#  most_recent = true
+data "aws_ami" "analysis_ami" {
+  most_recent = true
 
-#  filter {
-#    name = "name"
+  filter {
+    name = "name"
 
-#    values = [
-#      "dq-ops-httpd*",
-#    ]
-#  }
+    values = [
+      "dq-ops-httpd*",
+    ]
+  }
 
-#  owners = [
-#    "093401982388",
-#  ]
-#}
+  owners = [
+    "self",
+  ]
+}
 
-#resource "aws_instance" "analysis" {
-#  key_name                    = "${var.key_name}"
-#  ami                         = "${data.aws_ami.analysis_ami.id}"
-#  instance_type               = "m4.xlarge"
-#  iam_instance_profile        = "${aws_iam_instance_profile.httpd_server_instance_profile.id}"
-#  vpc_security_group_ids      = ["${aws_security_group.analysis.id}"]
-#  associate_public_ip_address = true
-#  monitoring                  = true
-#  private_ip                  = "${var.analysis_instance_ip}"
-#  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
-#  user_data                   = "${var.s3_bucket_name}"
+resource "aws_instance" "analysis" {
+  key_name                    = "${var.key_name}"
+  ami                         = "${data.aws_ami.analysis_ami.id}"
+  instance_type               = "m4.xlarge"
+  iam_instance_profile        = "${aws_iam_instance_profile.httpd_server_instance_profile.id}"
+  vpc_security_group_ids      = ["${aws_security_group.analysis.id}"]
+  associate_public_ip_address = true
+  monitoring                  = true
+  private_ip                  = "${var.analysis_instance_ip}"
+  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
 
-#  tags = {
-#    Name = "ec2-analysis-${local.naming_suffix}"
-#  }
+  user_data = <<EOF
+#!/bin/bash
 
-#  lifecycle {
-#    prevent_destroy = true
+set -e
 
-#    ignore_changes = [
-#      "ami",
-#    ]
-#  }
-#}
+echo "export s3_bucket_name=${var.s3_bucket_name}" >> /root/.bashrc && source /root/.bashrc
+export analysis_proxy_hostname=`aws --region eu-west-2 ssm get-parameter --name analysis_proxy_hostname --query 'Parameter.Value' --output text --with-decryption`
+
+mkdir -p "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/"
+mkdir -p "/etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/"
+aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem"
+aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate_key --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem"
+aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate_fullchain --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem"
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/cert.pem
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/privkey.pem
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/fullchain.pem
+chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem"
+chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem"
+chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem"
+
+aws s3 cp s3://$s3_bucket_name/httpd.conf /etc/httpd/conf/httpd.conf --region eu-west-2
+aws s3 cp s3://$s3_bucket_name/ssl.conf /etc/httpd/conf.d/ssl.conf --region eu-west-2
+
+systemctl restart httpd
+EOF
+
+  tags = {
+    Name = "ec2-analysis-${local.naming_suffix}"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      "ami",
+      "user_data",
+    ]
+  }
+}
 
 resource "aws_security_group" "analysis" {
   vpc_id = "${aws_vpc.opsvpc.id}"
@@ -75,10 +101,10 @@ resource "aws_security_group" "analysis" {
   }
 }
 
-#resource "aws_eip" "analysis_eip" {
-#  instance = "${aws_instance.analysis.id}"
-#  vpc      = true
-#}
+resource "aws_eip" "analysis_eip" {
+  instance = "${aws_instance.analysis.id}"
+  vpc      = true
+}
 
 resource "aws_route" "apps-tab" {
   route_table_id            = "${aws_route_table.ops_public_table.id}"
@@ -89,6 +115,7 @@ resource "aws_route" "apps-tab" {
 resource "aws_kms_key" "httpd_config_bucket_key" {
   description             = "This key is used to encrypt HTTPD config bucket objects"
   deletion_window_in_days = 7
+  enable_key_rotation     = true
 }
 
 resource "aws_s3_bucket" "httpd_config_bucket" {
@@ -124,6 +151,30 @@ resource "aws_s3_bucket_metric" "httpd_config_bucket_logging" {
   name   = "httpd_config_bucket_metric"
 }
 
+resource "aws_s3_bucket_policy" "httpd_config_bucket" {
+  bucket = "${var.s3_bucket_name}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "HTTP",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "*",
+      "Resource": "arn:aws:s3:::${var.s3_bucket_name}/*",
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    }
+  ]
+}
+POLICY
+}
+
 resource "aws_iam_role_policy" "httpd_linux_iam" {
   role = "${aws_iam_role.httpd_ec2_server_role.id}"
 
@@ -147,6 +198,18 @@ resource "aws_iam_role_policy" "httpd_linux_iam" {
           "Effect": "Allow",
           "Action": "kms:Decrypt",
           "Resource": "${aws_kms_key.httpd_config_bucket_key.arn}"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+              "ssm:GetParameter"
+          ],
+          "Resource": [
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_hostname",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_key",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_fullchain"
+          ]
         }
     ]
 }
@@ -231,6 +294,6 @@ variable "management_access" {}
 
 variable "s3_bucket_name" {}
 
-#output "analysis_eip" {
-#  value = "${aws_eip.analysis_eip.public_ip}"
-#}
+output "analysis_eip" {
+  value = "${aws_eip.analysis_eip.public_ip}"
+}
