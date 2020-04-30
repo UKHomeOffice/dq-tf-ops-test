@@ -22,10 +22,10 @@ output "ad_subnet_id" {
 #   ]
 # }
 
-output "httpd_config_bucket_key" {
-  value = "${aws_kms_key.httpd_config_bucket_key.arn}"
-}
-
-output "httpd_config_bucket" {
-  value = "${aws_s3_bucket.httpd_config_bucket.id}"
-}
+# output "httpd_config_bucket_key" {
+#   value = "${aws_kms_key.httpd_config_bucket_key.arn}"
+# }
+#
+# output "httpd_config_bucket" {
+#   value = "${aws_s3_bucket.httpd_config_bucket.id}"
+# }
