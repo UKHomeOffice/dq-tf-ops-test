@@ -62,13 +62,13 @@ variable "route_table_cidr_blocks" {
 #   default     = "test_instance"
 # }
 
-variable "athena_log_bucket" {
-  description = "Athena log bucket ARN"
-}
-
-variable "aws_bucket_key" {
-  description = "S3 bucket KMS key"
-}
+# variable "athena_log_bucket" {
+#   description = "Athena log bucket ARN"
+# }
+#
+# variable "aws_bucket_key" {
+#   description = "S3 bucket KMS key"
+# }
 
 # variable "tableau_dev_ip" {
 #   description = "Tableau Development IP address"
@@ -104,9 +104,9 @@ variable "aws_bucket_key" {
 #   type        = "list"
 # }
 
-variable "apps_aws_bucket_key" {
-  description = "Apps KMS key"
-}
+# variable "apps_aws_bucket_key" {
+#   description = "Apps KMS key"
+# }
 
 variable "ops_config_acl" {
   default = "private"
