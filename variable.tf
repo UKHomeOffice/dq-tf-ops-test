@@ -7,10 +7,10 @@ variable "naming_suffix" {}
 variable "ad_aws_ssm_document_name" {}
 variable "ad_writer_instance_profile_name" {}
 variable "adminpassword" {}
-variable "log_archive_s3_bucket" {}
+# variable "log_archive_s3_bucket" {}
 variable "namespace" {}
-variable "ops_config_bucket" {}
-variable "athena_maintenance_bucket" {}
+# variable "ops_config_bucket" {}
+# variable "athena_maintenance_bucket" {}
 
 variable "vpc_peering_connection_ids" {
   description = "Map of VPC peering IDs for the Ops route table."
