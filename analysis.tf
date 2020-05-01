@@ -175,46 +175,46 @@ resource "aws_s3_bucket_policy" "httpd_config_bucket" {
 POLICY
 }
 
-resource "aws_iam_role_policy" "httpd_linux_iam" {
-  role = "${aws_iam_role.httpd_ec2_server_role.id}"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-          "Effect": "Allow",
-          "Action": ["s3:ListBucket"],
-          "Resource": "${aws_s3_bucket.httpd_config_bucket.arn}"
-        },
-        {
-          "Effect": "Allow",
-          "Action": [
-            "s3:GetObject"
-          ],
-          "Resource": "${aws_s3_bucket.httpd_config_bucket.arn}/*"
-        },
-        {
-          "Effect": "Allow",
-          "Action": "kms:Decrypt",
-          "Resource": "${aws_kms_key.httpd_config_bucket_key.arn}"
-        },
-        {
-          "Effect": "Allow",
-          "Action": [
-              "ssm:GetParameter"
-          ],
-          "Resource": [
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_hostname",
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate",
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_key",
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_fullchain"
-          ]
-        }
-    ]
-}
-EOF
-}
+# resource "aws_iam_role_policy" "httpd_linux_iam" {
+#   role = "${aws_iam_role.httpd_ec2_server_role.id}"
+#
+#   policy = <<EOF
+# {
+#     "Version": "2012-10-17",
+#     "Statement": [
+#         {
+#           "Effect": "Allow",
+#           "Action": ["s3:ListBucket"],
+#           "Resource": "${aws_s3_bucket.httpd_config_bucket.arn}"
+#         },
+#         {
+#           "Effect": "Allow",
+#           "Action": [
+#             "s3:GetObject"
+#           ],
+#           "Resource": "${aws_s3_bucket.httpd_config_bucket.arn}/*"
+#         },
+#         {
+#           "Effect": "Allow",
+#           "Action": "kms:Decrypt",
+#           "Resource": "${aws_kms_key.httpd_config_bucket_key.arn}"
+#         },
+#         {
+#           "Effect": "Allow",
+#           "Action": [
+#               "ssm:GetParameter"
+#           ],
+#           "Resource": [
+#             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_hostname",
+#             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate",
+#             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_key",
+#             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_fullchain"
+#           ]
+#         }
+#     ]
+# }
+# EOF
+# }
 #
 # resource "aws_iam_role" "httpd_ec2_server_role" {
 #   name = "httpd_ec2_server_role"
