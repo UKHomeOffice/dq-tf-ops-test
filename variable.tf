@@ -7,10 +7,10 @@ variable "naming_suffix" {}
 variable "ad_aws_ssm_document_name" {}
 variable "ad_writer_instance_profile_name" {}
 variable "adminpassword" {}
-# variable "log_archive_s3_bucket" {}
+variable "log_archive_s3_bucket" {}
 variable "namespace" {}
-# variable "ops_config_bucket" {}
-# variable "athena_maintenance_bucket" {}
+variable "ops_config_bucket" {}
+variable "athena_maintenance_bucket" {}
 
 variable "vpc_peering_connection_ids" {
   description = "Map of VPC peering IDs for the Ops route table."
@@ -62,13 +62,13 @@ variable "route_table_cidr_blocks" {
 #   default     = "test_instance"
 # }
 
-# variable "athena_log_bucket" {
-#   description = "Athena log bucket ARN"
-# }
-#
-# variable "aws_bucket_key" {
-#   description = "S3 bucket KMS key"
-# }
+variable "athena_log_bucket" {
+  description = "Athena log bucket ARN"
+}
+
+variable "aws_bucket_key" {
+  description = "S3 bucket KMS key"
+}
 
 # variable "tableau_dev_ip" {
 #   description = "Tableau Development IP address"
@@ -94,19 +94,19 @@ variable "route_table_cidr_blocks" {
 #   type        = "list"
 # }
 #
-# variable "dq_pipeline_ops_readwrite_bucket_list" {
-#   description = "RW Bucket list from dq-tf-apps"
-#   type        = "list"
-# }
-#
-# variable "dq_pipeline_ops_readonly_bucket_list" {
-#   description = "RO Bucket list from dq-tf-apps"
-#   type        = "list"
-# }
+variable "dq_pipeline_ops_readwrite_bucket_list" {
+  description = "RW Bucket list from dq-tf-apps"
+  type        = "list"
+}
 
-# variable "apps_aws_bucket_key" {
-#   description = "Apps KMS key"
-# }
+variable "dq_pipeline_ops_readonly_bucket_list" {
+  description = "RO Bucket list from dq-tf-apps"
+  type        = "list"
+}
+
+variable "apps_aws_bucket_key" {
+  description = "Apps KMS key"
+}
 
 variable "ops_config_acl" {
   default = "private"
