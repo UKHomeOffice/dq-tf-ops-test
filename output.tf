@@ -14,13 +14,13 @@ output "ad_subnet_id" {
   value = "${aws_subnet.ad_subnet.id}"
 }
 
-# output "iam_roles" {
-#   value = [
-#     "${aws_iam_role.ops_win.id}",
-#     "${aws_iam_role.httpd_ec2_server_role.id}",
-#     "${module.ops_tableau.iam_roles}"
-#   ]
-# }
+output "iam_roles" {
+  value = [
+    "${aws_iam_role.ops_win.id}",
+    "${aws_iam_role.httpd_ec2_server_role.id}",
+    "${module.ops_tableau.iam_roles}"
+  ]
+}
 
 output "httpd_config_bucket_key" {
   value = "${aws_kms_key.httpd_config_bucket_key.arn}"
