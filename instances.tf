@@ -23,38 +23,38 @@
 #   }
 # }
 #
-# resource "aws_instance" "bastion_win" {
-#   key_name                    = "${var.key_name}"
-#   ami                         = "${data.aws_ami.win.id}"
-#   instance_type               = "t2.large"
-#   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-#   iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
-#   subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-#   private_ip                  = "${var.bastion_windows_ip}"
-#   associate_public_ip_address = false
-#   monitoring                  = true
-#
-#   user_data = <<EOF
-#     <powershell>
-#     Rename-Computer -NewName "BASTION-WIN1" -Restart
-#     [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
-#     </powershell>
-# EOF
-#
-#   lifecycle {
-#     prevent_destroy = true
-#
-#     ignore_changes = [
-#       "user_data",
-#       "ami",
-#       "instance_type",
-#     ]
-#   }
-#
-#   tags = {
-#     Name = "bastion-win-${local.naming_suffix}"
-#   }
-# }
+resource "aws_instance" "bastion_win" {
+  key_name                    = "${var.key_name}"
+  ami                         = "${data.aws_ami.win.id}"
+  instance_type               = "t2.medium"
+  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
+  iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
+  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+  private_ip                  = "${var.bastion_windows_ip}"
+  associate_public_ip_address = true
+  monitoring                  = true
+
+  user_data = <<EOF
+    <powershell>
+    Rename-Computer -NewName "BASTION-WIN1" -Restart
+    [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
+    </powershell>
+EOF
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      "user_data",
+      "ami",
+      "instance_type",
+    ]
+  }
+
+  tags = {
+    Name = "bastion-win-${local.naming_suffix}"
+  }
+}
 #
 # resource "aws_instance" "bastion_win2" {
 #   key_name                    = "${var.key_name}"
@@ -156,31 +156,31 @@
 # }
 #
 #
-# resource "aws_ssm_association" "bastion_win" {
-#   name        = "${var.ad_aws_ssm_document_name}"
-#   instance_id = "${aws_instance.bastion_win.id}"
-# }
-#
-# resource "aws_security_group" "Bastions" {
-#   vpc_id = "${aws_vpc.opsvpc.id}"
-#
-#   tags {
-#     Name = "sg-bastions-${local.naming_suffix}"
-#   }
-#
-#   ingress {
-#     from_port   = 3389
-#     to_port     = 3389
-#     protocol    = "tcp"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-#
-#   ingress {
-#     from_port   = 22
-#     to_port     = 22
-#     protocol    = "tcp"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
+resource "aws_ssm_association" "bastion_win" {
+  name        = "${var.ad_aws_ssm_document_name}"
+  instance_id = "${aws_instance.bastion_win.id}"
+}
+
+resource "aws_security_group" "Bastions" {
+  vpc_id = "${aws_vpc.opsvpc.id}"
+
+  tags {
+    Name = "sg-bastions-${local.naming_suffix}"
+  }
+
+ingress {
+  from_port   = 3389
+  to_port     = 3389
+  protocol    = "tcp"
+  cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+}
+
+ingress {
+  from_port   = 22
+  to_port     = 22
+  protocol    = "tcp"
+  cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+}
 #
 #   ingress {
 #     from_port   = 111
