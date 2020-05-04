@@ -10,7 +10,7 @@ data "aws_ami" "win" {
   }
 
   owners = [
-    "self",
+    "797728447925",
   ]
 }
 
