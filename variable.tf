@@ -22,11 +22,11 @@ variable "route_table_cidr_blocks" {
   type        = "map"
 }
 
-# variable "bastion_win_id" {
-#   default     = "01-"
-#   description = "Identification number for Bastion Host Windows Instance"
-# }
-#
+variable "bastion_win_id" {
+  default     = "01-"
+  description = "Identification number for Bastion Host Windows Instance"
+}
+
 # variable "bastion_linux_id" {
 #   default     = "01-"
 #   description = "Identification number for Bastion Host Linux Instance"
