@@ -168,83 +168,83 @@ resource "aws_security_group" "Bastions" {
     Name = "sg-bastions-${local.naming_suffix}"
   }
 
-ingress {
-  from_port   = 3389
-  to_port     = 3389
-  protocol    = "tcp"
-  cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
-}
+  ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+  }
 
-ingress {
-  from_port   = 22
-  to_port     = 22
-  protocol    = "tcp"
-  cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+  }
+  #
+  #   ingress {
+  #     from_port   = 111
+  #     to_port     = 111
+  #     protocol    = "tcp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 111
+  #     to_port     = 111
+  #     protocol    = "udp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 2049
+  #     to_port     = 2049
+  #     protocol    = "tcp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 2049
+  #     to_port     = 2049
+  #     protocol    = "udp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 445
+  #     to_port     = 445
+  #     protocol    = "tcp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 445
+  #     to_port     = 445
+  #     protocol    = "udp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   ingress {
+  #     from_port   = 135
+  #     to_port     = 135
+  #     protocol    = "tcp"
+  #     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
+  #   }
+  #
+  #   egress {
+  #     from_port   = 0
+  #     to_port     = 0
+  #     protocol    = "-1"
+  #     cidr_blocks = ["0.0.0.0/0"]
+  #   }
+  #
+  #   egress {
+  #     from_port   = 0
+  #     to_port     = 0
+  #     protocol    = "-1"
+  #     cidr_blocks = ["0.0.0.0/0"]
+  #   }
 }
-#
-#   ingress {
-#     from_port   = 111
-#     to_port     = 111
-#     protocol    = "tcp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 111
-#     to_port     = 111
-#     protocol    = "udp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 2049
-#     to_port     = 2049
-#     protocol    = "tcp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 2049
-#     to_port     = 2049
-#     protocol    = "udp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 445
-#     to_port     = 445
-#     protocol    = "tcp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 445
-#     to_port     = 445
-#     protocol    = "udp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   ingress {
-#     from_port   = 135
-#     to_port     = 135
-#     protocol    = "tcp"
-#     cidr_blocks = ["${var.namespace == "prod" ? "10.2" : "10.8"}.0.0/24"]
-#   }
-#
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-#
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-# }
 #
 # module "ops_tableau" {
 #   source = "github.com/UKHomeOffice/dq-tf-ops-tableau"
