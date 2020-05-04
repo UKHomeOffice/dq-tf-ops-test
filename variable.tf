@@ -36,9 +36,9 @@ variable "bastion_win_id" {
 #   description = "Mock EC2 instance IP"
 # }
 #
-# variable "bastion_windows_ip" {
-#   description = "Mock EC2 instance IP"
-# }
+variable "bastion_windows_ip" {
+  description = "Mock EC2 instance IP"
+}
 #
 # variable "bastion2_windows_ip" {
 #   description = "2nd Win bastion IP address"
@@ -57,10 +57,10 @@ variable "bastion_win_id" {
 #   type        = "list"
 # }
 #
-# variable "key_name" {
-#   description = "Default SSH key name for EC2 instances"
-#   default     = "test_instance"
-# }
+variable "key_name" {
+  description = "Default SSH key name for EC2 instances"
+  default     = "test_instance"
+}
 
 variable "athena_log_bucket" {
   description = "Athena log bucket ARN"
