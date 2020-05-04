@@ -172,14 +172,14 @@ resource "aws_security_group" "Bastions" {
     from_port   = 3389
     to_port     = 3389
     protocol    = "tcp"
-    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32", "10.8.0.12/32"]
   }
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32"]
+    cidr_blocks = ["82.37.244.139/32", "77.97.212.243/32", "10.8.0.12/32"]
   }
   #
   #   ingress {
