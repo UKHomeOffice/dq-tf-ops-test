@@ -24,13 +24,13 @@
 # }
 #
 resource "aws_instance" "bastion_win" {
-  key_name                    = "${var.key_name}"
-  ami                         = "${data.aws_ami.win.id}"
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.win.id
   instance_type               = "t2.medium"
-  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-  iam_instance_profile        = "${aws_iam_instance_profile.ops_win.id}"
-  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
-  private_ip                  = "${var.bastion_windows_ip}"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+  subnet_id                   = aws_subnet.ops_public_subnet.id
+  private_ip                  = var.bastion_windows_ip
   associate_public_ip_address = true
   monitoring                  = true
 
@@ -41,13 +41,14 @@ resource "aws_instance" "bastion_win" {
     </powershell>
 EOF
 
+
   lifecycle {
     prevent_destroy = true
 
     ignore_changes = [
-      "user_data",
-      "ami",
-      "instance_type",
+      user_data,
+      ami,
+      instance_type,
     ]
   }
 
@@ -55,6 +56,7 @@ EOF
     Name = "bastion-win-${local.naming_suffix}"
   }
 }
+
 #
 # resource "aws_instance" "bastion_win2" {
 #   key_name                    = "${var.key_name}"
@@ -157,14 +159,14 @@ EOF
 #
 #
 resource "aws_ssm_association" "bastion_win" {
-  name        = "${var.ad_aws_ssm_document_name}"
-  instance_id = "${aws_instance.bastion_win.id}"
+  name        = var.ad_aws_ssm_document_name
+  instance_id = aws_instance.bastion_win.id
 }
 
 resource "aws_security_group" "Bastions" {
-  vpc_id = "${aws_vpc.opsvpc.id}"
+  vpc_id = aws_vpc.opsvpc.id
 
-  tags {
+  tags = {
     Name = "sg-bastions-${local.naming_suffix}"
   }
 
@@ -245,6 +247,7 @@ resource "aws_security_group" "Bastions" {
   #     cidr_blocks = ["0.0.0.0/0"]
   #   }
 }
+
 #
 # module "ops_tableau" {
 #   source = "github.com/UKHomeOffice/dq-tf-ops-tableau"

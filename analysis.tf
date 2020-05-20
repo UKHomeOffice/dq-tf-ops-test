@@ -119,14 +119,14 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
 }
 
 resource "aws_s3_bucket" "httpd_config_bucket" {
-  bucket = "${var.s3_bucket_name}"
-  acl    = "${var.s3_bucket_acl}"
-  region = "${var.region}"
+  bucket = var.s3_bucket_name
+  acl    = var.s3_bucket_acl
+  region = var.region
 
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
-        kms_master_key_id = "${aws_kms_key.httpd_config_bucket_key.arn}"
+        kms_master_key_id = aws_kms_key.httpd_config_bucket_key.arn
         sse_algorithm     = "aws:kms"
       }
     }
@@ -137,7 +137,7 @@ resource "aws_s3_bucket" "httpd_config_bucket" {
   }
 
   logging {
-    target_bucket = "${var.log_archive_s3_bucket}"
+    target_bucket = var.log_archive_s3_bucket
     target_prefix = "${var.service}-log/"
   }
 
@@ -147,12 +147,12 @@ resource "aws_s3_bucket" "httpd_config_bucket" {
 }
 
 resource "aws_s3_bucket_metric" "httpd_config_bucket_logging" {
-  bucket = "${var.s3_bucket_name}"
+  bucket = var.s3_bucket_name
   name   = "httpd_config_bucket_metric"
 }
 
 resource "aws_s3_bucket_policy" "httpd_config_bucket" {
-  bucket = "${var.s3_bucket_name}"
+  bucket = var.s3_bucket_name
 
   policy = <<POLICY
 {
@@ -173,6 +173,7 @@ resource "aws_s3_bucket_policy" "httpd_config_bucket" {
   ]
 }
 POLICY
+
 }
 
 # resource "aws_iam_role_policy" "httpd_linux_iam" {
@@ -248,11 +249,13 @@ variable "s3_bucket_acl" {
 variable "region" {
   default = "eu-west-2"
 }
+
 #
 variable "service" {
   default     = "dq-httpd-ops"
   description = "As per naming standards in AWS-DQ-Network-Routing 0.5 document"
 }
+
 #
 # variable "analysis_instance_ip" {}
 #
@@ -292,7 +295,9 @@ variable "service" {
 #
 # variable "management_access" {}
 #
-variable "s3_bucket_name" {}
+variable "s3_bucket_name" {
+}
+
 #
 # output "analysis_eip" {
 #   value = "${aws_eip.analysis_eip.public_ip}"
