@@ -1,25 +1,50 @@
-variable "cidr_block" {}
-variable "vpc_subnet_cidr_block" {}
-variable "public_subnet_cidr_block" {}
-variable "ad_subnet_cidr_block" {}
-variable "az" {}
-variable "naming_suffix" {}
-variable "ad_aws_ssm_document_name" {}
-variable "ad_writer_instance_profile_name" {}
-variable "adminpassword" {}
-variable "log_archive_s3_bucket" {}
-variable "namespace" {}
-variable "ops_config_bucket" {}
-variable "athena_maintenance_bucket" {}
+variable "cidr_block" {
+}
+
+variable "vpc_subnet_cidr_block" {
+}
+
+variable "public_subnet_cidr_block" {
+}
+
+variable "ad_subnet_cidr_block" {
+}
+
+variable "az" {
+}
+
+variable "naming_suffix" {
+}
+
+variable "ad_aws_ssm_document_name" {
+}
+
+variable "ad_writer_instance_profile_name" {
+}
+
+variable "adminpassword" {
+}
+
+variable "log_archive_s3_bucket" {
+}
+
+variable "namespace" {
+}
+
+variable "ops_config_bucket" {
+}
+
+variable "athena_maintenance_bucket" {
+}
 
 variable "vpc_peering_connection_ids" {
   description = "Map of VPC peering IDs for the Ops route table."
-  type        = "map"
+  type        = map(string)
 }
 
 variable "route_table_cidr_blocks" {
   description = "Map of CIDR blocks for the OPs private route table."
-  type        = "map"
+  type        = map(string)
 }
 
 variable "bastion_win_id" {
@@ -39,6 +64,7 @@ variable "bastion_win_id" {
 variable "bastion_windows_ip" {
   description = "Mock EC2 instance IP"
 }
+
 #
 # variable "bastion2_windows_ip" {
 #   description = "2nd Win bastion IP address"
@@ -96,12 +122,12 @@ variable "aws_bucket_key" {
 #
 variable "dq_pipeline_ops_readwrite_bucket_list" {
   description = "RW Bucket list from dq-tf-apps"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "dq_pipeline_ops_readonly_bucket_list" {
   description = "RO Bucket list from dq-tf-apps"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "apps_aws_bucket_key" {
@@ -115,3 +141,4 @@ variable "ops_config_acl" {
 variable "athena_maintenance_acl" {
   default = "private"
 }
+
