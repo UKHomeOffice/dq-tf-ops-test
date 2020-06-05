@@ -42,15 +42,15 @@ resource "aws_instance" "bastion_win" {
 EOF
 
 
-  lifecycle {
-    prevent_destroy = true
-
-    ignore_changes = [
-      user_data,
-      ami,
-      instance_type,
-    ]
-  }
+  # lifecycle {
+  #   prevent_destroy = true
+  #
+  #   ignore_changes = [
+  #     user_data,
+  #     ami,
+  #     instance_type,
+  #   ]
+  # }
 
   tags = {
     Name = "bastion-win-${local.naming_suffix}"
