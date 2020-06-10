@@ -77,12 +77,12 @@ variable "bastion_windows_ip" {
 # variable "bastion4_windows_ip" {
 #   description = "4th Win bastion IP address"
 # }
-#
-# variable "ad_sg_cidr_ingress" {
-#   description = "List of CIDR block ingress to AD machines SG"
-#   type        = "list"
-# }
-#
+
+variable "ad_sg_cidr_ingress" {
+  description = "List of CIDR block ingress to AD machines SG"
+  type        = "list"
+}
+
 variable "key_name" {
   description = "Default SSH key name for EC2 instances"
   default     = "test_instance"
@@ -141,4 +141,3 @@ variable "ops_config_acl" {
 variable "athena_maintenance_acl" {
   default = "private"
 }
-
