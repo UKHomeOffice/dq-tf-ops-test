@@ -62,6 +62,12 @@ resource "aws_ssm_parameter" "bastion_win_password" {
   type        = "String"
   description = "Administor password to be entered"
   value       = ""
+
+  lifecycle {
+    ignore_changes = [
+      value,
+    ]
+  }
 }
 
 #
