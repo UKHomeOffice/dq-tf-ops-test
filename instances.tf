@@ -24,7 +24,7 @@
 # }
 #
 resource "aws_instance" "trivy_server" {
-  key_name                    = var.key_name
+  key_name                    = "test-temp"
   ami                         = data.aws_ami.trivy_server.id
   instance_type               = "t2.medium"
   vpc_security_group_ids      = [aws_security_group.Bastions.id]
