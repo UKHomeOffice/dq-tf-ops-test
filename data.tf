@@ -49,7 +49,7 @@ data "aws_availability_zones" "available" {
 #   ]
 # }
 
-data "aws_ami" "bastion_linux" {
+data "aws_ami" "trivy_server" {
   most_recent = true
 
   filter {
