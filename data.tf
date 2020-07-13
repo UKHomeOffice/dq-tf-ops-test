@@ -14,7 +14,7 @@ data "aws_ami" "win" {
   ]
 }
 
-data "aws_ami" "trivy_server" {
+data "aws_ami" "trivy" {
   most_recent = true
 
   filter {
