@@ -23,6 +23,30 @@
 #   }
 # }
 #
+resource "aws_instance" "trivy_server" {
+  key_name                    = "${var.key_name}"
+  ami                         = "${data.aws_ami.bastion_linux.id}"
+  instance_type               = "t2.medium"
+  vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
+  subnet_id                   = "${aws_subnet.OPSSubnet.id}"
+  private_ip                  = "${var.bastion_linux_ip}"
+  associate_public_ip_address = false
+  monitoring                  = true
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      "user_data",
+      "ami",
+      "instance_type",
+    ]
+  }
+
+  tags = {
+    Name = "bastion-linux-${local.naming_suffix}"
+  }
+}
 resource "aws_instance" "bastion_win" {
   key_name                    = var.key_name
   ami                         = data.aws_ami.win.id

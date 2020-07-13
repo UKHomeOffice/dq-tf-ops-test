@@ -49,6 +49,22 @@ data "aws_availability_zones" "available" {
 #   ]
 # }
 
+data "aws_ami" "bastion_linux" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      "dq-vulnerability-scanner-11*",
+    ]
+  }
+
+  owners = [
+    "self",
+  ]
+}
+
 data "aws_caller_identity" "current" {
 }
 
