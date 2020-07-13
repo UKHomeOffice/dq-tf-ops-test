@@ -60,7 +60,10 @@ variable "bastion_win_id" {
 # variable "bastion_linux_ip" {
 #   description = "Mock EC2 instance IP"
 # }
-#
+
+variable "trivy_server_ip" {
+  description = "Mock EC2 instance IP"
+}
 variable "bastion_windows_ip" {
   description = "Mock EC2 instance IP"
 }
@@ -141,4 +144,3 @@ variable "ops_config_acl" {
 variable "athena_maintenance_acl" {
   default = "private"
 }
-
