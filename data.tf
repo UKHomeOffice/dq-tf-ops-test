@@ -56,7 +56,7 @@ data "aws_ami" "trivy_server" {
     name = "name"
 
     values = [
-      "dq-vulnerability-scanner-11*",
+      "dq-vulnerability-scanner-11",
     ]
   }
 
