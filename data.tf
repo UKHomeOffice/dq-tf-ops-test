@@ -14,21 +14,21 @@ data "aws_ami" "win" {
   ]
 }
 
-# data "aws_ami" "trivy" {
-#   most_recent = true
-#
-#   filter {
-#     name = "name"
-#
-#     values = [
-#       "dq-vulnerability-scanner*",
-#     ]
-#   }
-#
-#   owners = [
-#     "797728447925",
-#   ]
-# }
+data "aws_ami" "trivy_server" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      "dq-vulnerability-scanner*",
+    ]
+  }
+
+  owners = [
+    "self",
+  ]
+}
 
 data "aws_availability_zones" "available" {
 }
@@ -49,21 +49,21 @@ data "aws_availability_zones" "available" {
 #   ]
 # }
 #
-data "aws_ami" "bastion_linux" {
-  most_recent = true
-
-  filter {
-    name = "name"
-
-    values = [
-      "dq-linux-bastion*",
-    ]
-  }
-
-  owners = [
-    "self",
-  ]
-}
+# data "aws_ami" "bastion_linux" {
+#   most_recent = true
+#
+#   filter {
+#     name = "name"
+#
+#     values = [
+#       "dq-linux-bastion*",
+#     ]
+#   }
+#
+#   owners = [
+#     "self",
+#   ]
+# }
 
 data "aws_caller_identity" "current" {
 }
