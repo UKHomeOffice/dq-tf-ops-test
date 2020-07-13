@@ -26,7 +26,7 @@ data "aws_ami" "trivy_server" {
   }
 
   owners = [
-    "self",
+    "093401982388",
   ]
 }
 
