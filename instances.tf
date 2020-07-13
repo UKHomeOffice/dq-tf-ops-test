@@ -30,7 +30,7 @@ resource "aws_instance" "trivy_server" {
   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
   subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
   private_ip                  = "${var.trivy_server_ip}"
-  associate_public_ip_address = trues
+  associate_public_ip_address = true
   monitoring                  = true
 
   lifecycle {
