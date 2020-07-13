@@ -29,7 +29,7 @@ resource "aws_instance" "trivy_server" {
   instance_type               = "t2.medium"
   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
   subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
-  private_ip                  = "${var.bastion_linux_ip}"
+  private_ip                  = "${var.trivy_server_ip}"
   associate_public_ip_address = false
   monitoring                  = true
 
