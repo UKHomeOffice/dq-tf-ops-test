@@ -29,6 +29,7 @@ class TestE2E(unittest.TestCase):
               naming_suffix                   = "preprod-dq"
               namespace                       = "notprod"
               # bastion_linux_ip                = "1.2.3.4"
+              trivy_server_ip                 = "1.2.3.4"
               # bastion_windows_ip              = "1.2.3.4"
               bastion_windows_ip             = "10.8.2.12"
               # bastion3_windows_ip             = "1.2.3.4"
