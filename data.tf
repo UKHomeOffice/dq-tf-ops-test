@@ -14,22 +14,6 @@ data "aws_ami" "win" {
   ]
 }
 
-data "aws_ami" "trivy_server" {
-  most_recent = true
-
-  filter {
-    name = "name"
-
-    values = [
-      "dq-vulnerability-scanner*",
-    ]
-  }
-
-  owners = [
-    "093401982388",
-  ]
-}
-
 data "aws_availability_zones" "available" {
 }
 
