@@ -140,3 +140,7 @@ variable "ops_config_acl" {
 variable "athena_maintenance_acl" {
   default = "private"
 }
+
+variable "region" {
+  default = "eu-west-2"
+}

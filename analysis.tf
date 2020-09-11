@@ -246,9 +246,9 @@ variable "s3_bucket_acl" {
   default = "private"
 }
 
-variable "region" {
-  default = "eu-west-2"
-}
+# variable "region" {
+#   default = "eu-west-2"
+# }
 
 #
 variable "service" {

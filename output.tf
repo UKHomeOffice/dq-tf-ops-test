@@ -10,9 +10,9 @@ output "opssubnet_cidr_block" {
   value = var.vpc_subnet_cidr_block
 }
 
-output "ad_subnet_id" {
-  value = aws_subnet.ad_subnet.id
-}
+# output "ad_subnet_id" {
+#   value = aws_subnet.ad_subnet.id
+# }
 
 # output "iam_roles" {
 #   value = [
@@ -29,4 +29,3 @@ output "httpd_config_bucket_key" {
 output "httpd_config_bucket" {
   value = aws_s3_bucket.httpd_config_bucket.id
 }
-
