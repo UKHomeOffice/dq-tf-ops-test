@@ -129,7 +129,6 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
 resource "aws_s3_bucket" "httpd_config_bucket" {
   bucket = var.s3_bucket_name
   acl    = var.s3_bucket_acl
-  region = var.region
 
   server_side_encryption_configuration {
     rule {
