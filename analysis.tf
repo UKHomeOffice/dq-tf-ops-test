@@ -15,41 +15,49 @@ data "aws_ami" "analysis_ami" {
 }
 
 resource "aws_instance" "analysis" {
-  key_name                    = "${var.key_name}"
-  ami                         = "${data.aws_ami.analysis_ami.id}"
-  instance_type               = "m4.xlarge"
-  iam_instance_profile        = "${aws_iam_instance_profile.httpd_server_instance_profile.id}"
-  vpc_security_group_ids      = ["${aws_security_group.analysis.id}"]
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.analysis_ami.id
+  instance_type               = var.namespace == "prod" ? "m4.xlarge" : "m5a.xlarge"
+  iam_instance_profile        = aws_iam_instance_profile.httpd_server_instance_profile.id
+  vpc_security_group_ids      = [aws_security_group.analysis.id]
   associate_public_ip_address = true
   monitoring                  = true
-  private_ip                  = "${var.analysis_instance_ip}"
-  subnet_id                   = "${aws_subnet.ops_public_subnet.id}"
+  private_ip                  = var.analysis_instance_ip
+  subnet_id                   = aws_subnet.ops_public_subnet.id
 
   user_data = <<EOF
 #!/bin/bash
-
 set -e
-
 echo "export s3_bucket_name=${var.s3_bucket_name}" >> /root/.bashrc && source /root/.bashrc
 export analysis_proxy_hostname=`aws --region eu-west-2 ssm get-parameter --name analysis_proxy_hostname --query 'Parameter.Value' --output text --with-decryption`
-
 mkdir -p "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/"
 mkdir -p "/etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/"
+mkdir -p "/etc/letsencrypt/live/""$analysis_proxy_hostname/"
 aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem"
 aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate_key --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem"
 aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate_fullchain --query 'Parameter.Value' --output text --with-decryption > "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem"
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/cert.pem
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/privkey.pem
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/fullchain.pem
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname/cert.pem
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname/privkey.pem
+ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname/fullchain.pem
 chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem"
 chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem"
 chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem"
-
 aws s3 cp s3://$s3_bucket_name/httpd.conf /etc/httpd/conf/httpd.conf --region eu-west-2
 aws s3 cp s3://$s3_bucket_name/ssl.conf /etc/httpd/conf.d/ssl.conf --region eu-west-2
-
+systemctl restart httpd
+pip uninstall requests -y
+pip uninstall six -y
+pip uninstall urllib3 -y
+yum reinstall python-requests -y
+yum reinstall python-six -y
+yum reinstall python-urllib3 -y
+pip install pyOpenSSL==0.14 -U -y
 systemctl restart httpd
 EOF
+
 
   tags = {
     Name = "ec2-analysis-${local.naming_suffix}"
@@ -59,21 +67,21 @@ EOF
     prevent_destroy = true
 
     ignore_changes = [
-      "ami",
-      "user_data",
+      ami,
+      user_data,
     ]
   }
 }
 
 resource "aws_security_group" "analysis" {
-  vpc_id = "${aws_vpc.opsvpc.id}"
+  vpc_id = aws_vpc.opsvpc.id
 
   ingress {
     from_port = 443
     to_port   = 443
     protocol  = "tcp"
 
-    cidr_blocks = ["${var.analysis_cidr_ingress}"]
+    cidr_blocks = var.analysis_cidr_ingress
   }
 
   ingress {
@@ -82,7 +90,7 @@ resource "aws_security_group" "analysis" {
     protocol  = "tcp"
 
     cidr_blocks = [
-      "${var.management_access}",
+      var.management_access,
     ]
   }
 
@@ -96,22 +104,22 @@ resource "aws_security_group" "analysis" {
     ]
   }
 
-  tags {
+  tags = {
     Name = "sg-analysis-${local.naming_suffix}"
   }
 }
 
 resource "aws_eip" "analysis_eip" {
-  instance = "${aws_instance.analysis.id}"
+  instance = aws_instance.analysis.id
   vpc      = true
 }
-#
-# resource "aws_route" "apps-tab" {
-#   route_table_id            = "${aws_route_table.ops_public_table.id}"
-#   destination_cidr_block    = "${var.route_table_cidr_blocks["apps_cidr"]}"
-#   vpc_peering_connection_id = "${var.vpc_peering_connection_ids["ops_and_apps"]}"
-# }
-#
+
+resource "aws_route" "apps-tab" {
+  route_table_id            = aws_route_table.ops_public_table.id
+  destination_cidr_block    = var.route_table_cidr_blocks["apps_cidr"]
+  vpc_peering_connection_id = var.vpc_peering_connection_ids["ops_and_apps"]
+}
+
 resource "aws_kms_key" "httpd_config_bucket_key" {
   description             = "This key is used to encrypt HTTPD config bucket objects"
   deletion_window_in_days = 7
@@ -121,7 +129,7 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
 resource "aws_s3_bucket" "httpd_config_bucket" {
   bucket = var.s3_bucket_name
   acl    = var.s3_bucket_acl
-  # region = var.region
+  region = var.region
 
   server_side_encryption_configuration {
     rule {
@@ -177,7 +185,7 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "httpd_linux_iam" {
-  role = "${aws_iam_role.httpd_ec2_server_role.id}"
+  role = aws_iam_role.httpd_ec2_server_role.id
 
   policy = <<EOF
 {
@@ -215,6 +223,7 @@ resource "aws_iam_role_policy" "httpd_linux_iam" {
     ]
 }
 EOF
+
 }
 
 resource "aws_iam_role" "httpd_ec2_server_role" {
@@ -227,19 +236,20 @@ resource "aws_iam_role" "httpd_ec2_server_role" {
     {
       "Effect": "Allow",
       "Principal": {
-        "Service": "ec2.amazonaws.com",
-        "Service": "s3.amazonaws.com"
+        "Service": [ "ec2.amazonaws.com",
+                     "s3.amazonaws.com" ]
       },
       "Action": "sts:AssumeRole"
     }
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_instance_profile" "httpd_server_instance_profile" {
   name = "httpd_server_instance_profile"
-  role = "${aws_iam_role.httpd_ec2_server_role.name}"
+  role = aws_iam_role.httpd_ec2_server_role.name
 }
 
 variable "s3_bucket_acl" {
@@ -250,17 +260,16 @@ variable "region" {
   default = "eu-west-2"
 }
 
-#
 variable "service" {
   default     = "dq-httpd-ops"
   description = "As per naming standards in AWS-DQ-Network-Routing 0.5 document"
 }
 
-
-variable "analysis_instance_ip" {}
+variable "analysis_instance_ip" {
+}
 
 variable "analysis_cidr_ingress" {
-  type = "list"
+  type = list(string)
 
   default = [
     "62.25.109.196/32",
@@ -293,12 +302,12 @@ variable "analysis_cidr_ingress" {
   ]
 }
 
-variable "management_access" {}
+variable "management_access" {
+}
 
 variable "s3_bucket_name" {
 }
 
-
 output "analysis_eip" {
-  value = "${aws_eip.analysis_eip.public_ip}"
+  value = aws_eip.analysis_eip.public_ip
 }
