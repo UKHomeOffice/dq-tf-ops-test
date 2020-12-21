@@ -15,6 +15,7 @@ data "aws_ami" "analysis_ami" {
 }
 
 resource "aws_instance" "analysis" {
+  count                       = "0"
   key_name                    = var.key_name
   ami                         = data.aws_ami.analysis_ami.id
   instance_type               = var.namespace == "prod" ? "m4.xlarge" : "m5a.xlarge"
