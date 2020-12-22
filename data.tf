@@ -52,6 +52,6 @@ data "aws_availability_zones" "available" {
 data "aws_caller_identity" "current" {
 }
 
-# data "aws_kms_key" "glue" {
-#   key_id = "alias/aws/glue"
-# }
+data "aws_kms_key" "glue" {
+  key_id = "alias/aws/glue"
+}
