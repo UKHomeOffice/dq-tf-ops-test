@@ -193,6 +193,6 @@ resource "aws_iam_user_group_membership" "compliance_user_group" {
   user = aws_iam_user.compliance_user.name
 
   groups = [
-    "dq-complaince"
+    "dq-compliance"
   ]
 }
