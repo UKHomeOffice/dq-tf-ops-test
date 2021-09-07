@@ -150,11 +150,11 @@ resource "aws_eip" "analysis_eip" {
   vpc      = true
 }
 
-resource "aws_route" "apps-tab" {
-  route_table_id            = aws_route_table.ops_public_table.id
-  destination_cidr_block    = var.route_table_cidr_blocks["apps_cidr"]
-  vpc_peering_connection_id = var.vpc_peering_connection_ids["ops_and_apps"]
-}
+# resource "aws_route" "apps-tab" {
+#   route_table_id            = aws_route_table.ops_public_table.id
+#   destination_cidr_block    = var.route_table_cidr_blocks["apps_cidr"]
+#   vpc_peering_connection_id = var.vpc_peering_connection_ids["ops_and_apps"]
+# }
 
 resource "aws_kms_key" "httpd_config_bucket_key" {
   description             = "This key is used to encrypt HTTPD config bucket objects"
