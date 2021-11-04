@@ -23,6 +23,11 @@
 #   }
 # }
 #
+
+data "template_file" "userdata" {
+  template = file("userdata.ps1")
+}
+
 resource "aws_instance" "bastion_win" {
   key_name                    = var.key_name
   ami                         = data.aws_ami.win.id
@@ -34,12 +39,14 @@ resource "aws_instance" "bastion_win" {
   associate_public_ip_address = true
   monitoring                  = true
 
-  user_data = <<EOF
-    <powershell>
-    Rename-Computer -NewName "BASTION-WIN1" -Restart
-    [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
-    </powershell>
-EOF
+  user_data = data.template_file.userdata.rendered
+
+  #   user_data = <<EOF
+  #     <powershell>
+  #     Rename-Computer -NewName "BASTION-WIN1" -Restart
+  #     [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
+  #     </powershell>
+  # EOF
 
 
   # lifecycle {
