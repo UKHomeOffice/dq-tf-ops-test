@@ -35,7 +35,7 @@ resource "aws_instance" "bastion_win" {
   associate_public_ip_address = true
   monitoring                  = true
 
-  user_data = file("userdata.ps1")
+  user_data = file(userdata.ps1)
 
   #   user_data = <<EOF
   #     <powershell>
