@@ -35,13 +35,25 @@ resource "aws_instance" "bastion_win" {
   associate_public_ip_address = true
   monitoring                  = true
 
-  user_data = "${path.module}/userdata/userdata.ps1"
+  provisioner "file" {
+    source      = "userdata.ps1"
+    destination = "c:\scripts\userdata.ps1"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "powershell c:\scripts\userdata.ps1",
 
-  #   user_data = <<EOF
-  #     <powershell>
-  #     Rename-Computer -NewName "BASTION-WIN1" -Restart
-  #     [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
-  #     </powershell>
+    ]
+    on_failure = "continue"
+  }
+
+  # user_data = "${path.module}/userdata/userdata.ps1"
+  #
+  # user_data = <<EOF
+  #   <powershell>
+  #   Rename-Computer -NewName "BASTION-WIN1" -Restart
+  #   [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
+  #   </powershell>
   # EOF
 
 
