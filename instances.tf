@@ -35,14 +35,12 @@ resource "aws_instance" "bastion_win" {
   associate_public_ip_address = true
   monitoring                  = true
 
-  user_data = "${path.module}/userdata/userdata.ps1"
-
-  #   user_data = <<EOF
-  #     <powershell>
-  #     Rename-Computer -NewName "BASTION-WIN1" -Restart
-  #     [Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
-  #     </powershell>
-  # EOF
+  user_data = <<EOF
+<powershell>
+New-Item -Path C:\Users\Public\Desktop\ -Name "testfile1.txt" -ItemType "file" -Value "This is a text string."
+[Environment]::SetEnvironmentVariable("S3_OPS_CONFIG_BUCKET", "${var.ops_config_bucket}/sqlworkbench", "Machine")
+</powershell>
+EOF
 
 
   # lifecycle {
