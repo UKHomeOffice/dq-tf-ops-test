@@ -24,10 +24,6 @@
 # }
 #
 
-data "template_file" "userdata" {
-  template = file("userdata.ps1")
-}
-
 resource "aws_instance" "bastion_win" {
   key_name                    = var.key_name
   ami                         = data.aws_ami.win.id
@@ -39,7 +35,7 @@ resource "aws_instance" "bastion_win" {
   associate_public_ip_address = true
   monitoring                  = true
 
-  user_data = data.template_file.userdata.rendered
+  user_data = file("userdata.ps1")
 
   #   user_data = <<EOF
   #     <powershell>
