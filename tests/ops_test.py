@@ -18,7 +18,7 @@ class TestE2E(unittest.TestCase):
               source = "./mymodule"
 
               providers = {
-                aws = "aws"
+                aws = aws
               }
 
               cidr_block                      = "10.2.0.0/16"
