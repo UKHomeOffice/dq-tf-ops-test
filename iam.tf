@@ -260,10 +260,6 @@ resource "aws_iam_policy" "ops_linux" {
 }
 EOF
 
-resource "aws_ssm_parameter" "compliance_user_key" {
-  name  = "dq-tf-compliance-user-key-${local.naming_suffix}"
-  type  = "SecureString"
-  value = aws_iam_access_key.compliance_user.secret
 }
 
 resource "aws_iam_role_policy_attachment" "ops_linux_policy_attach" {
