@@ -24,33 +24,33 @@
 # }
 #
 
-set -e
-
-#log output from this user_data script
-exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
-
-echo "Enforcing imdsv2 on ec2 instance"
-curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
-
-echo "copying the ec2-user sudoers file to /etc/sudoers.d"
-[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
-
-EOF
-
-  lifecycle {
-    prevent_destroy = true
-
-    ignore_changes = [
-      user_data,
-      ami,
-      instance_type,
-    ]
-  }
-
-  tags = {
-    Name = "bastion-linux-${local.naming_suffix}"
-  }
-}
+#set -e
+#
+##log output from this user_data script
+#exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+#
+#echo "Enforcing imdsv2 on ec2 instance"
+#curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
+#
+#echo "copying the ec2-user sudoers file to /etc/sudoers.d"
+#[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
+#
+#EOF
+#
+#  lifecycle {
+#    prevent_destroy = true
+#
+#    ignore_changes = [
+#      user_data,
+#      ami,
+#      instance_type,
+#    ]
+#  }
+#
+#  tags = {
+#    Name = "bastion-linux-${local.naming_suffix}"
+#  }
+#}
 
 resource "aws_instance" "win_bastions" {
   count                       = var.namespace == "prod" ? "2" : "0" # normally 2 - for Win Bastion 1 & Win Bastion 2
