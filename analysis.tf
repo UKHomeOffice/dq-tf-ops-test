@@ -420,11 +420,11 @@ variable "analysis_cidr_ingress" {
 }
 
 
-module "ec2_alarms" {
-  source = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
-
-  naming_suffix   = local.naming_suffix
-  environment     = var.naming_suffix
-  pipeline_name   = "analysis-ec2"
-  ec2_instance_id = aws_instance.analysis.id
-}
+# module "ec2_alarms" {
+#   source = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
+#
+#   naming_suffix   = local.naming_suffix
+#   environment     = var.naming_suffix
+#   pipeline_name   = "analysis-ec2"
+#   ec2_instance_id = aws_instance.analysis.id
+# }
