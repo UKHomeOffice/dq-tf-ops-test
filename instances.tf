@@ -111,7 +111,6 @@ resource "aws_instance" "win_bastions_test" {
                         </powershell>
                       EOF
 
-
   # lifecycle {
   #   prevent_destroy = true
   #

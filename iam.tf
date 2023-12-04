@@ -271,10 +271,8 @@ resource "aws_iam_role_policy_attachment" "ops_linux_policy_attach" {
   policy_arn = aws_iam_policy.ops_linux.arn
 }
 
-  groups = [
-    "dq-compliance",
-    "terraform-test"
-  ]
+resource "aws_iam_instance_profile" "ops_linux" {
+  role = aws_iam_role.ops_linux.name
 }
 
 // # add dq-tf-compliance user to be used by drone pipleines for compliance jobs

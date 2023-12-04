@@ -88,7 +88,7 @@ class TestE2E(unittest.TestCase):
         self.assertEqual(self.runner.get_value("module.ops.aws_vpc.opsvpc", "tags"), {"Name": "vpc-ops-preprod-dq"})
 
     def test_name_suffix_ad_subnet(self):
-        self.assertEqual(self.runner.get_value("module.ops.aws_subnet.ad_subnet", "tags"), {'Name': "ad-subnet-ops-preprod-dq"})
+        self.assertEqual(self.runner.get_value("module.ops.aws_subnet.ad_subnet", "tags"), {"Name": "ad-subnet-ops-preprod-dq"})
 
     def test_name_bastion(self):
         self.assertEqual(self.runner.get_value("module.ops.aws_instance.win_bastions[0]", "tags"), {"Name": "win-bastion-1-ops-preprod-dq"})
