@@ -33,25 +33,38 @@ set -e
 #log output from this user_data script
 exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
 
+#log1
+echo "!!! starting cloudwatch configurations"
+
+echo "Enforcing imdsv2 on ec2 instance"
+curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required --region eu-west-2
+
 # start the cloud watch agent
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -s -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
+#log2
+echo "!!! writing gets3content env vars file"
+
 echo "
-export s3_bucket_name=${var.s3_bucket_name}
-export data_archive_bucket=${var.data_archive_bucket}-${var.namespace}
+export s3_bucket_name=${var.httpd_config_bucket_name}-${var.namespace}
+export data_archive_bucket=${var.data_archive_bucket_name}-${var.namespace}
 export AWS_ACCESS_KEY_ID=`aws --region eu-west-2 ssm get-parameter --name dq-tf-deploy-user-id-ops-${var.namespace}-dq --with-decryption --query 'Parameter.Value' --output text`
 export AWS_SECRET_ACCESS_KEY=`aws --region eu-west-2 ssm get-parameter --name dq-tf-deploy-user-key-ops-${var.namespace}-dq --with-decryption --query 'Parameter.Value' --output text`
-" > /root/.bashrc && source /root/.bashrc
+" > /home/ec2-user/gets3content/env_vars
 export analysis_proxy_hostname=`aws --region eu-west-2 ssm get-parameter --name analysis_proxy_hostname --query 'Parameter.Value' --output text --with-decryption`
+
+#log3
+echo "!!! configuring directories and pem files"
 
 mkdir -p "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/"
 mkdir -p "/etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/"
 mkdir -p "/etc/letsencrypt/live/""$analysis_proxy_hostname/"
+source /home/ec2-user/gets3content/env_vars
 aws s3 cp s3://$data_archive_bucket/analysis/letsencrypt/cert.pem "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem" --region eu-west-2
 aws s3 cp s3://$data_archive_bucket/analysis/letsencrypt/privkey.pem "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem" --region eu-west-2
 aws s3 cp s3://$data_archive_bucket/analysis/letsencrypt/fullchain.pem "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem" --region eu-west-2
 echo "#remove access to data_archive_bucket bucket from /root/.bashrc"
-echo export s3_bucket_name=${var.s3_bucket_name} > /root/.bashrc && source /root/.bashrc
+echo export s3_bucket_name=${var.httpd_config_bucket_name}-${var.namespace} > /root/.bashrc && source /root/.bashrc
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/cert.pem
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/privkey.pem
 ln -s "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem" /etc/letsencrypt/live/""$analysis_proxy_hostname""-0001/fullchain.pem
@@ -62,36 +75,45 @@ chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/cert1.pem
 chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/privkey1.pem"
 chmod 0644 "/etc/letsencrypt/archive/""$analysis_proxy_hostname""-0001/fullchain1.pem"
 
+#log4
+echo "!!! writing ssl_expire_script env vars file"
+
 echo "#Pull values from Parameter Store and save to profile"
-touch /home/centos/ssl_expire_script/env_vars
+touch /home/ec2-user/ssl_expire_script/env_vars
 echo "
-export AWS_ACCESS_KEY_ID=`aws --region eu-west-2 ssm get-parameter --name dq-tf-deploy-user-id-ops-${var.namespace}-dq --with-decryption --query 'Parameter.Value' --output text`
-export AWS_SECRET_ACCESS_KEY=`aws --region eu-west-2 ssm get-parameter --name dq-tf-deploy-user-key-ops-${var.namespace}-dq --with-decryption --query 'Parameter.Value' --output text`
-export AWS_DEFAULT_REGION=eu-west-2
 export GET_EXPIRY_COMMAND=`aws --region eu-west-2 ssm get-parameter --name analysis_proxy_certificate_get_expiry_command --with-decryption --query 'Parameter.Value' --output text`
 export GET_REMOTE_EXPIRY_COMMAND=`aws --region eu-west-2 ssm get-parameter --name analysis_get_remote_expiry --with-decryption --query 'Parameter.Value' --output text`
 export LIVE_CERTS=/etc/letsencrypt/live/`aws --region eu-west-2 ssm get-parameter --name analysis_proxy_hostname --with-decryption --query 'Parameter.Value' --output text`
-export S3_FILE_LANDING=/home/centos/ssl_expire_script/remote_cert.pem
-export BUCKET=${var.data_archive_bucket}-${var.namespace}
-" > /home/centos/ssl_expire_script/env_vars
+export S3_FILE_LANDING=/home/ec2-user/ssl_expire_script/remote_cert.pem
+export BUCKET=${var.data_archive_bucket_name}-${var.namespace}
+" > /home/ec2-user/ssl_expire_script/env_vars
+
+#log5
+echo "!!! downloading httpd.conf and ssl.conf"
 
 aws s3 cp s3://$s3_bucket_name/httpd.conf /etc/httpd/conf/httpd.conf --region eu-west-2
 aws s3 cp s3://$s3_bucket_name/ssl.conf /etc/httpd/conf.d/ssl.conf --region eu-west-2
 
-systemctl restart httpd
-
-
-pip3 uninstall requests -y
-pip3 uninstall six -y
-pip3 uninstall urllib3 -y
-yum install python-requests -y
-yum install python-six -y
-yum install python-urllib3 -y
-python -m pip install --upgrade urllib3 --user
-pip3 install pyOpenSSL==0.14 -U
-
+#log6
+echo "!!! starting httpd service"
 
 systemctl restart httpd
+
+#log7
+echo "!!! userdata completed"
+
+
+# pip3 uninstall requests -y
+# pip3 uninstall six -y
+# pip3 uninstall urllib3 -y
+# yum install python-requests -y
+# yum install python-six -y
+# yum install python-urllib3 -y
+# python -m pip install --upgrade urllib3 --user
+# pip3 install pyOpenSSL==0.14 -U
+
+
+# systemctl restart httpd
 EOF
 
 
@@ -163,7 +185,7 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
 }
 
 resource "aws_s3_bucket" "httpd_config_bucket" {
-  bucket = var.s3_bucket_name
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
   acl    = var.s3_bucket_acl
   # region = var.region
 
@@ -191,12 +213,12 @@ resource "aws_s3_bucket" "httpd_config_bucket" {
 }
 
 resource "aws_s3_bucket_metric" "httpd_config_bucket_logging" {
-  bucket = var.s3_bucket_name
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
   name   = "httpd_config_bucket_metric"
 }
 
 resource "aws_s3_bucket_policy" "httpd_config_bucket" {
-  bucket = var.s3_bucket_name
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
 
   policy = <<POLICY
 {
@@ -207,7 +229,7 @@ resource "aws_s3_bucket_policy" "httpd_config_bucket" {
       "Effect": "Deny",
       "Principal": "*",
       "Action": "*",
-      "Resource": "arn:aws:s3:::${var.s3_bucket_name}/*",
+      "Resource": "${aws_s3_bucket.httpd_config_bucket.arn}/*",
       "Condition": {
         "Bool": {
           "aws:SecureTransport": "false"
@@ -220,8 +242,8 @@ POLICY
 
 }
 
-resource "aws_iam_role_policy" "httpd_linux_iam" {
-  role = aws_iam_role.httpd_ec2_server_role.id
+resource "aws_iam_policy" "httpd_linux_iam" {
+  name = "httpd-linux-iam-${local.naming_suffix}"
 
   policy = <<EOF
 {
@@ -230,21 +252,46 @@ resource "aws_iam_role_policy" "httpd_linux_iam" {
         {
           "Effect": "Allow",
           "Action": ["s3:ListBucket"],
-          "Resource":
-            "${aws_s3_bucket.httpd_config_bucket.arn}"
+          "Resource": [
+            "${aws_s3_bucket.httpd_config_bucket.arn}",
+            "${aws_s3_bucket.httpd_config_bucket.arn}/*"
+          ]
         },
         {
           "Effect": "Allow",
           "Action": [
             "s3:GetObject"
           ],
-          "Resource":
-            "${aws_s3_bucket.httpd_config_bucket.arn}/*"
+          "Resource": [
+            "${aws_s3_bucket.httpd_config_bucket.arn}/*",
+            "arn:aws:s3:::${var.data_archive_bucket_name}-${var.namespace}/analysis/*"
+          ]
+        },
+        {
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::${var.data_archive_bucket_name}-${var.namespace}",
+                "arn:aws:s3:::${var.data_archive_bucket_name}-${var.namespace}/analysis/*"
+            ]
         },
         {
           "Effect": "Allow",
           "Action": "kms:Decrypt",
           "Resource": "${aws_kms_key.httpd_config_bucket_key.arn}"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+            ],
+            "Resource": "*"            
         },
         {
           "Effect": "Allow",
@@ -257,16 +304,31 @@ resource "aws_iam_role_policy" "httpd_linux_iam" {
             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate",
             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_key",
             "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_fullchain",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_get_expiry_command",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis-proxy-user-id-apps-${var.namespace}-dq",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis-proxy-user-key-apps-${var.namespace}-dq",
+            "arn:aws:ssm:eu-west-2:*:parameter/analysis_get_remote_expiry",
             "arn:aws:ssm:eu-west-2:*:parameter/dq-tf-deploy-user-id-ops-${var.namespace}-dq",
             "arn:aws:ssm:eu-west-2:*:parameter/dq-tf-deploy-user-key-ops-${var.namespace}-dq",
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_proxy_certificate_get_expiry_command",
-            "arn:aws:ssm:eu-west-2:*:parameter/analysis_get_remote_expiry"
+            "arn:aws:ssm:eu-west-2:*:parameter/slack_notification_webhook"
           ]
+        },
+        {
+           "Effect": "Allow",
+           "Action": [
+              "ec2:ModifyInstanceMetadataOptions"
+           ],
+           "Resource": "arn:aws:ec2:*:*:instance/*"
         }
     ]
 }
 EOF
 
+}
+
+resource "aws_iam_role_policy_attachment" "httpd_linux_iam" {
+  role       = aws_iam_role.httpd_ec2_server_role.id
+  policy_arn = aws_iam_policy.httpd_linux_iam.arn
 }
 
 resource "aws_iam_role" "httpd_ec2_server_role" {
@@ -288,6 +350,11 @@ resource "aws_iam_role" "httpd_ec2_server_role" {
 }
 EOF
 
+}
+
+resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw_analysis" {
+  role       = aws_iam_role.httpd_ec2_server_role.id
+  policy_arn = "arn:aws:iam::${var.account_id[var.namespace]}:policy/dq-tf-infra-write-to-cw"
 }
 
 resource "aws_iam_role_policy_attachment" "httpd_ec2_server_CWagent" {
@@ -347,18 +414,11 @@ variable "analysis_cidr_ingress" {
     "5.148.32.229/32",
     "119.73.144.40/32",
     "85.211.101.55/32",
+    "18.134.215.222/32",
+    "13.42.77.46/32"
   ]
 }
 
-variable "management_access" {
-}
-
-variable "s3_bucket_name" {
-}
-
-output "analysis_eip" {
-  value = aws_eip.analysis_eip.public_ip
-}
 
 module "ec2_alarms" {
   source = "github.com/UKHomeOffice/dq-tf-cloudwatch-ec2"
