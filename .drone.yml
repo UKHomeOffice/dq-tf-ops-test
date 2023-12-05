@@ -30,7 +30,6 @@ x-anchors:
     - echo "export AWS_ACCESS_KEY_ID=$${ACCESS_KEY}" > $${AWS_SECRETS_FILE}
     - echo "export AWS_SECRET_ACCESS_KEY=$${SECRET_KEY}" >> $${AWS_SECRETS_FILE}
     - echo "export AWS_DEFAULT_REGION=$${REGION}" >> $${AWS_SECRETS_FILE}
-    # Since AWS is eventually consistent we need to sleep a little while so the AWS key is created and made available
 
   check-format: &check-format
     - terraform --version
