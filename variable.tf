@@ -29,12 +29,16 @@ variable "log_archive_s3_bucket" {
 }
 
 variable "namespace" {
+  default = "test"
 }
 
 variable "ops_config_bucket" {
 }
 
 variable "athena_maintenance_bucket" {
+}
+
+variable "domain_joiner_pwd" {
 }
 
 variable "vpc_peering_connection_ids" {
@@ -47,41 +51,23 @@ variable "route_table_cidr_blocks" {
   type        = map(string)
 }
 
-variable "bastion_win_id" {
-  default     = "01-"
-  description = "Identification number for Bastion Host Windows Instance"
-}
-
-# variable "bastion_linux_id" {
-#   default     = "01-"
-#   description = "Identification number for Bastion Host Linux Instance"
-# }
-#
-# variable "bastion_linux_ip" {
-#   description = "Mock EC2 instance IP"
-# }
-variable "bastion_windows_ip" {
+variable "bastion_linux_ip" {
   description = "Mock EC2 instance IP"
 }
 
-#
-# variable "bastion2_windows_ip" {
-#   description = "2nd Win bastion IP address"
-# }
-#
-# variable "bastion3_windows_ip" {
-#   description = "3rd Win bastion IP address"
-# }
-#
-# variable "bastion4_windows_ip" {
-#   description = "4th Win bastion IP address"
-# }
-#
-# variable "ad_sg_cidr_ingress" {
-#   description = "List of CIDR block ingress to AD machines SG"
-#   type        = "list"
-# }
-#
+variable "bastions_windows_ip" {
+  description = "All Win bastion IP addresses"
+}
+
+variable "test_bastions_windows_ip" {
+  description = "Test Win bastion IP addresses"
+}
+
+variable "ad_sg_cidr_ingress" {
+  description = "List of CIDR block ingress to AD machines SG"
+  type        = list(string)
+}
+
 variable "key_name" {
   description = "Default SSH key name for EC2 instances"
   default     = "test_instance"
@@ -105,20 +91,20 @@ variable "aws_bucket_key" {
 #   default     = "10.0.0.2"
 # }
 
-# variable "tableau_subnet_cidr_block" {
-#   description = "Tableau Dev CIDR block"
-# }
+variable "tableau_subnet_cidr_block" {
+  description = "Tableau Dev CIDR block"
+}
 
-# variable "dq_pipeline_ops_readwrite_database_name_list" {
-#   description = "RW Database list from dq-tf-apps"
-#   type        = "list"
-# }
-#
-# variable "dq_pipeline_ops_readonly_database_name_list" {
-#   description = "RO Database list from dq-tf-apps"
-#   type        = "list"
-# }
-#
+variable "dq_pipeline_ops_readwrite_database_name_list" {
+  description = "RW Database list from dq-tf-apps"
+  type        = list(string)
+}
+
+variable "dq_pipeline_ops_readonly_database_name_list" {
+  description = "RO Database list from dq-tf-apps"
+  type        = list(string)
+}
+
 variable "dq_pipeline_ops_readwrite_bucket_list" {
   description = "RW Bucket list from dq-tf-apps"
   type        = list(string)
@@ -141,6 +127,13 @@ variable "athena_maintenance_acl" {
   default = "private"
 }
 
-variable "data_archive_bucket" {
+variable "data_archive_bucket_name" {
   default = "s3-dq-data-archive-bucket"
+}
+
+variable "httpd_config_bucket_name" {
+  default = "s3-dq-httpd-config-bucket"
+}
+
+variable "management_access" {
 }

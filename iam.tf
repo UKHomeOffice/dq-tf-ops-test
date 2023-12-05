@@ -1,4 +1,5 @@
 resource "aws_iam_role" "ops_win" {
+  name               = "ops-win"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -20,10 +21,8 @@ EOF
 
 }
 
-
-resource "aws_iam_role_policy" "ops_win_athena" {
+resource "aws_iam_policy" "ops_win_athena" {
   name = "ops-win-athena-${local.naming_suffix}"
-  role = aws_iam_role.ops_win.name
 
   policy = <<EOF
 {
@@ -42,8 +41,22 @@ resource "aws_iam_role_policy" "ops_win_athena" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${join("\",\"", formatlist("arn:aws:s3:::%s-%s", var.dq_pipeline_ops_readwrite_bucket_list, var.namespace))}",
-        "${join("\",\"", formatlist("arn:aws:s3:::%s-%s/*", var.dq_pipeline_ops_readwrite_bucket_list, var.namespace))}",
+        "${join(
+  "\",\"",
+  formatlist(
+    "arn:aws:s3:::%s-%s",
+    var.dq_pipeline_ops_readwrite_bucket_list,
+    var.namespace,
+  ),
+  )}",
+        "${join(
+  "\",\"",
+  formatlist(
+    "arn:aws:s3:::%s-%s/*",
+    var.dq_pipeline_ops_readwrite_bucket_list,
+    var.namespace,
+  ),
+  )}",
         "arn:aws:s3:::${var.ops_config_bucket}",
         "arn:aws:s3:::${var.ops_config_bucket}/*"
       ]
@@ -66,8 +79,22 @@ resource "aws_iam_role_policy" "ops_win_athena" {
       ],
       "Effect": "Allow",
       "Resource": [
-        "${join("\",\"", formatlist("arn:aws:s3:::%s-%s", var.dq_pipeline_ops_readonly_bucket_list, var.namespace))}",
-        "${join("\",\"", formatlist("arn:aws:s3:::%s-%s/*", var.dq_pipeline_ops_readonly_bucket_list, var.namespace))}"
+        "${join(
+  "\",\"",
+  formatlist(
+    "arn:aws:s3:::%s-%s",
+    var.dq_pipeline_ops_readonly_bucket_list,
+    var.namespace,
+  ),
+  )}",
+        "${join(
+  "\",\"",
+  formatlist(
+    "arn:aws:s3:::%s-%s/*",
+    var.dq_pipeline_ops_readonly_bucket_list,
+    var.namespace,
+  ),
+)}"
       ]
     },
     {
@@ -102,6 +129,16 @@ resource "aws_iam_role_policy" "ops_win_athena" {
     },
     {
       "Action": [
+        "ssm:GetParameter"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+          "arn:aws:ssm:eu-west-2:*:parameter/AD_Domain_Joiner_Username",
+          "arn:aws:ssm:eu-west-2:*:parameter/AD_Domain_Joiner_Password"
+      ]
+    },
+    {
+      "Action": [
         "kms:Encrypt",
         "kms:Decrypt",
         "kms:ReEncrypt*",
@@ -127,10 +164,28 @@ resource "aws_iam_role_policy" "ops_win_athena" {
       ],
       "Effect": "Allow",
       "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+         "ec2:ModifyInstanceMetadataOptions"
+      ],
+      "Resource": "arn:aws:ec2:*:*:instance/*"
     }
   ]
 }
 EOF
+
+}
+
+resource "aws_iam_role_policy_attachment" "dq_tf_infra_write_to_cw_ops" {
+  role       = aws_iam_role.ops_win.id
+  policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/dq-tf-infra-write-to-cw"
+}
+
+resource "aws_iam_role_policy_attachment" "ops_win_athena" {
+  role       = aws_iam_role.ops_win.name
+  policy_arn = aws_iam_policy.ops_win_athena.arn
 }
 
 resource "aws_iam_instance_profile" "ops_win" {
@@ -167,33 +222,81 @@ resource "aws_iam_user_group_membership" "deploy_user_group" {
   ]
 }
 
-# add dq-tf-compliance user to be used by drone pipleines for compliance jobs
-
-resource "aws_iam_user" "compliance_user" {
-  name = "dq-tf-compliance-${local.naming_suffix}"
-}
-
-resource "aws_iam_access_key" "compliance_user" {
-  user = aws_iam_user.compliance_user.name
-}
-
-resource "aws_ssm_parameter" "compliance_user_id" {
-  name  = "dq-tf-compliance-user-id-${local.naming_suffix}"
-  type  = "SecureString"
-  value = aws_iam_access_key.compliance_user.id
-}
-
-resource "aws_ssm_parameter" "compliance_user_key" {
-  name  = "dq-tf-compliance-user-key-${local.naming_suffix}"
-  type  = "SecureString"
-  value = aws_iam_access_key.compliance_user.secret
-}
-
-resource "aws_iam_user_group_membership" "compliance_user_group" {
-  user = aws_iam_user.compliance_user.name
-
-  groups = [
-    "dq-compliance",
-    "terraform-test"
+resource "aws_iam_role" "ops_linux" {
+  name               = "ops-linux"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+                   "ec2.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    }
   ]
 }
+EOF
+
+}
+
+resource "aws_iam_policy" "ops_linux" {
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [   
+    {
+      "Effect": "Allow",
+      "Action": [
+         "ec2:ModifyInstanceMetadataOptions"
+      ],
+      "Resource": "arn:aws:ec2:*:*:instance/*"
+    }
+  ]
+}
+EOF
+
+}
+
+resource "aws_iam_role_policy_attachment" "ops_linux_policy_attach" {
+  role       = aws_iam_role.ops_linux.id
+  policy_arn = aws_iam_policy.ops_linux.arn
+}
+
+resource "aws_iam_instance_profile" "ops_linux" {
+  role = aws_iam_role.ops_linux.name
+}
+
+// # add dq-tf-compliance user to be used by drone pipleines for compliance jobs
+
+// resource "aws_iam_user" "compliance_user" {
+//   name = "dq-tf-compliance-${local.naming_suffix}"
+// }
+
+// resource "aws_iam_access_key" "compliance_user" {
+//   user = aws_iam_user.compliance_user.name
+// }
+
+// resource "aws_ssm_parameter" "compliance_user_id" {
+//   name  = "dq-tf-compliance-user-id-${local.naming_suffix}"
+//   type  = "SecureString"
+//   value = aws_iam_access_key.compliance_user.id
+// }
+
+// resource "aws_ssm_parameter" "compliance_user_key" {
+//   name  = "dq-tf-compliance-user-key-${local.naming_suffix}"
+//   type  = "SecureString"
+//   value = aws_iam_access_key.compliance_user.secret
+// }
+
+// resource "aws_iam_user_group_membership" "compliance_user_group" {
+//   user = aws_iam_user.compliance_user.name
+
+//   groups = [
+//     "dq-compliance"
+//   ]
+// }
