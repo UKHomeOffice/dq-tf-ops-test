@@ -1,18 +1,18 @@
-data "aws_ami" "win" {
-  most_recent = true
-
-  filter {
-    name = "name"
-
-    values = [
-      "dq-ops-win-bastion-*",
-    ]
-  }
-
-  owners = [
-    "self",
-  ]
-}
+#data "aws_ami" "win" {
+#  most_recent = true
+#
+#  filter {
+#    name = "name"
+#
+#    values = [
+#      "dq-ops-win-bastion-*",
+#    ]
+#  }
+#
+#  owners = [
+#    "self",
+#  ]
+#}
 
 #data "aws_ami" "win_test" {
 #  most_recent = true

@@ -52,79 +52,79 @@
 #  }
 #}
 
-resource "aws_instance" "win_bastions" {
-  count                       = var.namespace == "prod" ? "2" : "0" # normally 2 - for Win Bastion 1 & Win Bastion 2
-  key_name                    = var.key_name
-  ami                         = data.aws_ami.win.id
-  instance_type               = "t2.medium"
-  vpc_security_group_ids      = [aws_security_group.Bastions.id]
-  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
-  subnet_id                   = aws_subnet.OPSSubnet.id
-  private_ip                  = element(var.bastions_windows_ip, count.index)
-  associate_public_ip_address = false
-  monitoring                  = true
+# resource "aws_instance" "win_bastions" {
+#   count                       = var.namespace == "prod" ? "2" : "0" # normally 2 - for Win Bastion 1 & Win Bastion 2
+#   key_name                    = var.key_name
+#   ami                         = data.aws_ami.win.id
+#   instance_type               = "t2.medium"
+#   vpc_security_group_ids      = [aws_security_group.Bastions.id]
+#   iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+#   subnet_id                   = aws_subnet.OPSSubnet.id
+#   private_ip                  = element(var.bastions_windows_ip, count.index)
+#   associate_public_ip_address = false
+#   monitoring                  = true
 
-  # Windows-specific settings
-  user_data = <<EOF
-                        <powershell>
-                          # Disable local Administrator
-                          Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
-                          # Add Instance metadata V2
-                          [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
-                          (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
-                        </powershell>
-                      EOF
+#   # Windows-specific settings
+#   user_data = <<EOF
+#                         <powershell>
+#                           # Disable local Administrator
+#                           Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
+#                           # Add Instance metadata V2
+#                           [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
+#                           (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
+#                         </powershell>
+#                       EOF
 
-  lifecycle {
-    prevent_destroy = true
+#   lifecycle {
+#     prevent_destroy = true
 
-    ignore_changes = [
-      user_data,
-      ami,
-      instance_type,
-    ]
-  }
+#     ignore_changes = [
+#       user_data,
+#       ami,
+#       instance_type,
+#     ]
+#   }
 
-  tags = {
-    Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
-  }
-}
+#   tags = {
+#     Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
+#   }
+# }
 
 
-resource "aws_instance" "win_bastions_test" {
-  count                       = var.namespace == "prod" ? "0" : "1" # increase count for testing purposes
-  key_name                    = var.key_name
-  ami                         = data.aws_ami.win_test.id
-  instance_type               = "t3a.xlarge"
-  vpc_security_group_ids      = [aws_security_group.Bastions.id]
-  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
-  subnet_id                   = aws_subnet.OPSSubnet.id
-  private_ip                  = element(var.test_bastions_windows_ip, count.index)
-  associate_public_ip_address = false
-  monitoring                  = true
+# resource "aws_instance" "win_bastions_test" {
+#   count                       = var.namespace == "prod" ? "0" : "1" # increase count for testing purposes
+#   key_name                    = var.key_name
+#   ami                         = data.aws_ami.win_test.id
+#   instance_type               = "t3a.xlarge"
+#   vpc_security_group_ids      = [aws_security_group.Bastions.id]
+#   iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+#   subnet_id                   = aws_subnet.OPSSubnet.id
+#   private_ip                  = element(var.test_bastions_windows_ip, count.index)
+#   associate_public_ip_address = false
+#   monitoring                  = true
 
-  # Windows-specific settings
-  user_data = <<EOF
-                        <powershell>
-                          # Disable local Administrator
-                          Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
-                        </powershell>
-                      EOF
+#   # Windows-specific settings
+#   user_data = <<EOF
+#                         <powershell>
+#                           # Disable local Administrator
+#                           Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
+#                         </powershell>
+#                       EOF
 
-  # lifecycle {
-  #   prevent_destroy = true
-  #
-  #   ignore_changes = [
-  #     user_data,
-  #     ami,
-  #     instance_type,
-  #   ]
-  # }
+#   # lifecycle {
+#   #   prevent_destroy = true
+#   #
+#   #   ignore_changes = [
+#   #     user_data,
+#   #     ami,
+#   #     instance_type,
+#   #   ]
+#   # }
 
-  tags = {
-    Name = "win-bastion-test-${count.index + 1}-${local.naming_suffix}"
-  }
-}
+#   tags = {
+#     Name = "win-bastion-test-${count.index + 1}-${local.naming_suffix}"
+#   }
+# }
 
 
 # The preferred format (Target: Key, Values) does not work
@@ -137,16 +137,16 @@ resource "aws_instance" "win_bastions_test" {
 #  }
 #}
 
-# Although `instance_id` is deprecated, it does still work
-resource "aws_ssm_association" "win_bastion1" {
-  name        = var.ad_aws_ssm_document_name
-  instance_id = aws_instance.win_bastions[0].id
-}
-
-resource "aws_ssm_association" "win_bastion2" {
-  name        = var.ad_aws_ssm_document_name
-  instance_id = aws_instance.win_bastions[1].id
-}
+# # Although `instance_id` is deprecated, it does still work
+# resource "aws_ssm_association" "win_bastion1" {
+#   name        = var.ad_aws_ssm_document_name
+#   instance_id = aws_instance.win_bastions[0].id
+# }
+#
+# resource "aws_ssm_association" "win_bastion2" {
+#   name        = var.ad_aws_ssm_document_name
+#   instance_id = aws_instance.win_bastions[1].id
+# }
 
 
 resource "aws_security_group" "Bastions" {
