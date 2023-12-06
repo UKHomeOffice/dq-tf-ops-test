@@ -91,7 +91,7 @@
 # }
 
 
- resource "aws_instance" "win_bastions_test" {
+resource "aws_instance" "win_bastions_test" {
   count                       = var.namespace == "prod" ? "0" : "1" # increase count for testing purposes
   key_name                    = var.key_name
   ami                         = data.aws_ami.win_test.id
