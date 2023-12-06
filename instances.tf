@@ -52,43 +52,43 @@
 #  }
 #}
 
-# resource "aws_instance" "win_bastions" {
-#   count                       = var.namespace == "prod" ? "2" : "0" # normally 2 - for Win Bastion 1 & Win Bastion 2
-#   key_name                    = var.key_name
-#   ami                         = data.aws_ami.win.id
-#   instance_type               = "t2.medium"
-#   vpc_security_group_ids      = [aws_security_group.Bastions.id]
-#   iam_instance_profile        = aws_iam_instance_profile.ops_win.id
-#   subnet_id                   = aws_subnet.OPSSubnet.id
-#   private_ip                  = element(var.bastions_windows_ip, count.index)
-#   associate_public_ip_address = false
-#   monitoring                  = true
+resource "aws_instance" "win_bastions" {
+  count                       = var.namespace == "prod" ? "2" : "1" # normally 2 - for Win Bastion 1 & Win Bastion 2
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.win.id
+  instance_type               = "t2.medium"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+  subnet_id                   = aws_subnet.OPSSubnet.id
+  private_ip                  = element(var.bastions_windows_ip, count.index)
+  associate_public_ip_address = false
+  monitoring                  = true
 
-#   # Windows-specific settings
-#   user_data = <<EOF
-#                         <powershell>
-#                           # Disable local Administrator
-#                           Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
-#                           # Add Instance metadata V2
-#                           [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
-#                           (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
-#                         </powershell>
-#                       EOF
+  # Windows-specific settings
+  user_data = <<EOF
+                        <powershell>
+                          # Disable local Administrator
+                          Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
+                          # Add Instance metadata V2
+                          [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
+                          (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
+                        </powershell>
+                      EOF
 
-#   lifecycle {
-#     prevent_destroy = true
+  lifecycle {
+    prevent_destroy = true
 
-#     ignore_changes = [
-#       user_data,
-#       ami,
-#       instance_type,
-#     ]
-#   }
+    ignore_changes = [
+      user_data,
+      ami,
+      instance_type,
+    ]
+  }
 
-#   tags = {
-#     Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
-#   }
-# }
+  tags = {
+    Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
+  }
+}
 
 
 resource "aws_instance" "win_bastions_test" {
