@@ -14,21 +14,21 @@
 #  ]
 #}
 
-#data "aws_ami" "win_test" {
-#  most_recent = true
-#
-#  filter {
-#    name = "name"
-#
-#    values = [
-#      var.namespace == "prod" ? "dq-ops-win-bastion-297*" : "dq-ops-win-bastion-420*"
-#    ]
-#  }
-#
-#  owners = [
-#    "self",
-#  ]
-#}
+data "aws_ami" "win_test" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      var.namespace == "prod" ? "dq-ops-win-bastion-297*" : "dq-ops-win-bastion-420*"
+    ]
+  }
+
+  owners = [
+    "self",
+  ]
+}
 
 
 data "aws_availability_zones" "available" {}
