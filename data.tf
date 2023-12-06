@@ -30,24 +30,23 @@ data "aws_ami" "win_test" {
   ]
 }
 
-
 data "aws_availability_zones" "available" {}
 
-#data "aws_ami" "bastion_linux" {
-#  most_recent = true
-#
-#  filter {
-#    name = "name"
-#
-#    values = [
-#      "dq-linux-bastion 283*",
-#    ]
-#  }
-#
-#  owners = [
-#    "self",
-#  ]
-#}
+data "aws_ami" "bastion_linux" {
+  most_recent = true
+
+  filter {
+    name = "name"
+
+    values = [
+      "dq-linux-bastion-283*",
+    ]
+  }
+
+  owners = [
+    "self",
+  ]
+}
 
 data "aws_caller_identity" "current" {}
 

@@ -1,56 +1,44 @@
-# resource "aws_instance" "bastion_linux" {
-#   key_name                    = "${var.key_name}"
-#   ami                         = "${data.aws_ami.bastion_linux.id}"
-#   instance_type               = "t2.medium"
-#   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-#   subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-#   private_ip                  = "${var.bastion_linux_ip}"
-#   associate_public_ip_address = false
-#   monitoring                  = true
-#
-#   lifecycle {
-#     prevent_destroy = true
-#
-#     ignore_changes = [
-#       "user_data",
-#       "ami",
-#       "instance_type",
-#     ]
-#   }
-#
-#   tags = {
-#     Name = "bastion-linux-${local.naming_suffix}"
-#   }
-# }
-#
+resource "aws_instance" "bastion_linux" {
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.bastion_linux.id
+  instance_type               = "t3a.medium"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  subnet_id                   = aws_subnet.OPSSubnet.id
+  private_ip                  = var.bastion_linux_ip
+  iam_instance_profile        = aws_iam_instance_profile.ops_linux.id
+  associate_public_ip_address = false
+  monitoring                  = true
 
-#set -e
-#
-##log output from this user_data script
-#exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
-#
-#echo "Enforcing imdsv2 on ec2 instance"
-#curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
-#
-#echo "copying the ec2-user sudoers file to /etc/sudoers.d"
-#[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
-#
-#EOF
-#
-#  lifecycle {
-#    prevent_destroy = true
-#
-#    ignore_changes = [
-#      user_data,
-#      ami,
-#      instance_type,
-#    ]
-#  }
-#
-#  tags = {
-#    Name = "bastion-linux-${local.naming_suffix}"
-#  }
-#}
+  user_data = <<EOF
+#!/bin/bash
+
+set -e
+
+#log output from this user_data script
+exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
+
+echo "Enforcing imdsv2 on ec2 instance"
+curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
+
+echo "copying the ec2-user sudoers file to /etc/sudoers.d"
+[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
+
+EOF
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      user_data,
+      ami,
+      instance_type,
+    ]
+  }
+
+  tags = {
+    Name = "bastion-linux-${local.naming_suffix}"
+  }
+}
 
 resource "aws_instance" "win_bastions" {
   count                       = var.namespace == "prod" ? "2" : "1" # normally 2 - for Win Bastion 1 & Win Bastion 2
