@@ -1,130 +1,118 @@
-# resource "aws_instance" "bastion_linux" {
-#   key_name                    = "${var.key_name}"
-#   ami                         = "${data.aws_ami.bastion_linux.id}"
-#   instance_type               = "t2.medium"
-#   vpc_security_group_ids      = ["${aws_security_group.Bastions.id}"]
-#   subnet_id                   = "${aws_subnet.OPSSubnet.id}"
-#   private_ip                  = "${var.bastion_linux_ip}"
-#   associate_public_ip_address = false
-#   monitoring                  = true
-#
-#   lifecycle {
-#     prevent_destroy = true
-#
-#     ignore_changes = [
-#       "user_data",
-#       "ami",
-#       "instance_type",
-#     ]
-#   }
-#
-#   tags = {
-#     Name = "bastion-linux-${local.naming_suffix}"
-#   }
-# }
-#
+resource "aws_instance" "bastion_linux" {
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.bastion_linux.id
+  instance_type               = "t3a.medium"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  subnet_id                   = aws_subnet.OPSSubnet.id
+  private_ip                  = var.bastion_linux_ip
+  iam_instance_profile        = aws_iam_instance_profile.ops_linux.id
+  associate_public_ip_address = false
+  monitoring                  = true
 
-#set -e
-#
-##log output from this user_data script
-#exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
-#
-#echo "Enforcing imdsv2 on ec2 instance"
-#curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
-#
-#echo "copying the ec2-user sudoers file to /etc/sudoers.d"
-#[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
-#
-#EOF
-#
-#  lifecycle {
-#    prevent_destroy = true
-#
-#    ignore_changes = [
-#      user_data,
-#      ami,
-#      instance_type,
-#    ]
-#  }
-#
-#  tags = {
-#    Name = "bastion-linux-${local.naming_suffix}"
-#  }
-#}
+  user_data = <<EOF
+#!/bin/bash
 
-# resource "aws_instance" "win_bastions" {
-#   count                       = var.namespace == "prod" ? "2" : "0" # normally 2 - for Win Bastion 1 & Win Bastion 2
-#   key_name                    = var.key_name
-#   ami                         = data.aws_ami.win.id
-#   instance_type               = "t2.medium"
-#   vpc_security_group_ids      = [aws_security_group.Bastions.id]
-#   iam_instance_profile        = aws_iam_instance_profile.ops_win.id
-#   subnet_id                   = aws_subnet.OPSSubnet.id
-#   private_ip                  = element(var.bastions_windows_ip, count.index)
-#   associate_public_ip_address = false
-#   monitoring                  = true
+set -e
 
-#   # Windows-specific settings
-#   user_data = <<EOF
-#                         <powershell>
-#                           # Disable local Administrator
-#                           Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
-#                           # Add Instance metadata V2
-#                           [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
-#                           (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
-#                         </powershell>
-#                       EOF
+#log output from this user_data script
+exec > >(tee /var/log/user-data.log|logger -t user-data ) 2>&1
 
-#   lifecycle {
-#     prevent_destroy = true
+echo "Enforcing imdsv2 on ec2 instance"
+curl http://169.254.169.254/latest/meta-data/instance-id | xargs -I {} aws ec2 modify-instance-metadata-options --instance-id {} --http-endpoint enabled --http-tokens required
 
-#     ignore_changes = [
-#       user_data,
-#       ami,
-#       instance_type,
-#     ]
-#   }
+echo "copying the ec2-user sudoers file to /etc/sudoers.d"
+[ -f "/opt/90-cloud-init-users" ] && mv /opt/90-cloud-init-users /etc/sudoers.d/
 
-#   tags = {
-#     Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
-#   }
-# }
+EOF
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      user_data,
+      ami,
+      instance_type,
+    ]
+  }
+
+  tags = {
+    Name = "bastion-linux-${local.naming_suffix}"
+  }
+}
+
+resource "aws_instance" "win_bastions" {
+  count                       = var.namespace == "prod" ? "2" : "1" # normally 2 - for Win Bastion 1 & Win Bastion 2
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.win.id
+  instance_type               = "t2.medium"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+  subnet_id                   = aws_subnet.OPSSubnet.id
+  private_ip                  = element(var.bastions_windows_ip, count.index)
+  associate_public_ip_address = false
+  monitoring                  = true
+
+  # Windows-specific settings
+  user_data = <<EOF
+                        <powershell>
+                          # Disable local Administrator
+                          Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
+                          # Add Instance metadata V2
+                          [string]$instance = Invoke-RestMethod -Method GET -Uri http://169.254.169.254/latest/meta-data/instance-id
+                          (Edit-EC2InstanceMetadataOption -InstanceId $instance -HttpTokens required -HttpEndpoint enabled).InstanceMetadataOptions
+                        </powershell>
+                      EOF
+
+  lifecycle {
+    prevent_destroy = true
+
+    ignore_changes = [
+      user_data,
+      ami,
+      instance_type,
+    ]
+  }
+
+  tags = {
+    Name = "win-bastion-${count.index + 1}-${local.naming_suffix}"
+  }
+}
 
 
-# resource "aws_instance" "win_bastions_test" {
-#   count                       = var.namespace == "prod" ? "0" : "1" # increase count for testing purposes
-#   key_name                    = var.key_name
-#   ami                         = data.aws_ami.win_test.id
-#   instance_type               = "t3a.xlarge"
-#   vpc_security_group_ids      = [aws_security_group.Bastions.id]
-#   iam_instance_profile        = aws_iam_instance_profile.ops_win.id
-#   subnet_id                   = aws_subnet.OPSSubnet.id
-#   private_ip                  = element(var.test_bastions_windows_ip, count.index)
-#   associate_public_ip_address = false
-#   monitoring                  = true
+resource "aws_instance" "win_bastions_test" {
+  count                       = var.namespace == "prod" ? "0" : "1" # increase count for testing purposes
+  key_name                    = var.key_name
+  ami                         = data.aws_ami.win_test.id
+  instance_type               = "t3a.xlarge"
+  vpc_security_group_ids      = [aws_security_group.Bastions.id]
+  iam_instance_profile        = aws_iam_instance_profile.ops_win.id
+  subnet_id                   = aws_subnet.OPSSubnet.id
+  private_ip                  = element(var.test_bastions_windows_ip, count.index)
+  associate_public_ip_address = false
+  monitoring                  = true
 
-#   # Windows-specific settings
-#   user_data = <<EOF
-#                         <powershell>
-#                           # Disable local Administrator
-#                           Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
-#                         </powershell>
-#                       EOF
+  # Windows-specific settings
+  user_data = <<EOF
+                        <powershell>
+                          # Disable local Administrator
+                          Get-LocalUser | Where-Object {$_.Name -eq "Administrator"} | Disable-LocalUser
+                        </powershell>
+                      EOF
 
-#   # lifecycle {
-#   #   prevent_destroy = true
-#   #
-#   #   ignore_changes = [
-#   #     user_data,
-#   #     ami,
-#   #     instance_type,
-#   #   ]
-#   # }
+  # lifecycle {
+  #   prevent_destroy = true
+  #
+  #   ignore_changes = [
+  #     user_data,
+  #     ami,
+  #     instance_type,
+  #   ]
+  # }
 
-#   tags = {
-#     Name = "win-bastion-test-${count.index + 1}-${local.naming_suffix}"
-#   }
-# }
+  tags = {
+    Name = "win-bastion-test-${count.index + 1}-${local.naming_suffix}"
+  }
+}
 
 
 # The preferred format (Target: Key, Values) does not work
