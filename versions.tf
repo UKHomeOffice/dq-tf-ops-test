@@ -7,3 +7,4 @@ terraform {
     random  = "~> 2.3"
   }
 }
+# empty commit to trigger cicd drone build
