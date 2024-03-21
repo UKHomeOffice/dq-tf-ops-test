@@ -184,7 +184,7 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
   enable_key_rotation     = true
 }
 
-resource "aws_s3_bucket" "httpd_config_bucket" {
+resource "aws_s3_bucket_versioning" "httpd_config_bucket" {
   bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
   acl    = var.s3_bucket_acl
   # region = var.region
@@ -197,9 +197,9 @@ resource "aws_s3_bucket" "httpd_config_bucket" {
       }
     }
   }
-
-  versioning {
-    enabled = true
+  
+  versioning_configuration {
+    status = "Enabled"
   }
 
   logging {
