@@ -214,9 +214,9 @@ resource "aws_s3_bucket_versioning" "httpd_config_bucket_versioning" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "httpd_config_bucket_server_side_encryption_configuration" {
   bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
   rule {
-      apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.httpd_config_bucket_key.arn
-      sse_algorithm     = "aws:kms"
+    apply_server_side_encryption_by_default {
+    kms_master_key_id = aws_kms_key.httpd_config_bucket_key.arn
+    sse_algorithm     = "aws:kms"
     }
   }
 }
