@@ -187,6 +187,9 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
 resource "aws_s3_bucket_versioning" "httpd_config_bucket" {
   bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
   acl    = var.s3_bucket_acl
+  versioning_configuration {
+    status = "Enabled"
+  }
   # region = var.region
 
   server_side_encryption_configuration {
@@ -196,10 +199,6 @@ resource "aws_s3_bucket_versioning" "httpd_config_bucket" {
         sse_algorithm     = "aws:kms"
       }
     }
-  }
-  
-  versioning_configuration {
-    status = "Enabled"
   }
 
   logging {
