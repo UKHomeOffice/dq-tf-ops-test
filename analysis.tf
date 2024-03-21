@@ -184,30 +184,41 @@ resource "aws_kms_key" "httpd_config_bucket_key" {
   enable_key_rotation     = true
 }
 
-resource "aws_s3_bucket_versioning" "httpd_config_bucket" {
+resource "aws_s3_bucket" "httpd_config_bucket" {
   bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
-  acl    = var.s3_bucket_acl
-  versioning_configuration {
-    status = "Enabled"
-  }
   # region = var.region
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        kms_master_key_id = aws_kms_key.httpd_config_bucket_key.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
-
-  logging {
-    target_bucket = var.log_archive_s3_bucket
-    target_prefix = "${var.service}-log/"
-  }
-
   tags = {
     Name = "s3-${local.naming_suffix}"
+  }
+}
+
+resource "aws_s3_bucket_logging" "httpd_config_bucket_logging" {
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
+
+  target_bucket = var.log_archive_s3_bucket
+  target_prefix = "${var.service}-log/"
+}
+
+resource "aws_s3_bucket_acl" "httpd_config_bucket_acl" {
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
+  acl    = var.s3_bucket_acl
+}
+
+resource "aws_s3_bucket_versioning" "httpd_config_bucket_versioning" {
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
+    versioning_configuration {
+      status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "httpd_config_bucket_server_side_encryption_configuration" {
+  bucket = "${var.httpd_config_bucket_name}-${var.namespace}"
+
+  rule {
+      apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.httpd_config_bucket_key.arn
+      sse_algorithm     = "aws:kms"
+    }
   }
 }
 
