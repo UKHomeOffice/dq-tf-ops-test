@@ -46,7 +46,7 @@ resource "aws_s3_bucket_versioning" "ops_config_bucket_versioning" {
   versioning_configuration {
     status = "Enabled"
   }
- } 
+}
 
 resource "aws_s3_bucket_logging" "example" {
   bucket = aws_s3_bucket.ops_config_bucket.id
