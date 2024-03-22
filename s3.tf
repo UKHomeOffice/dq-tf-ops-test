@@ -48,14 +48,14 @@ resource "aws_s3_bucket_versioning" "ops_config_bucket_versioning" {
   }
 }
 
-resource "aws_s3_bucket_logging" "example" {
+resource "aws_s3_bucket_logging" "ops_config_bucket_logging" {
   bucket = aws_s3_bucket.ops_config_bucket.id
 
   target_bucket = var.log_archive_s3_bucket
   target_prefix = "ops_config_bucket/"
 }
 
-resource "aws_s3_bucket_acl" "httpd_config_bucket_acl" {
+resource "aws_s3_bucket_acl" "ops_config_bucket_acl" {
   bucket = aws_s3_bucket.ops_config_bucket.id
   acl    = var.ops_config_acl
 }
