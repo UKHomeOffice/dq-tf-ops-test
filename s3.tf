@@ -90,26 +90,55 @@ resource "aws_s3_bucket" "athena_maintenance_bucket" {
   acl    = var.athena_maintenance_acl
   # region = var.region
 
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
+  # server_side_encryption_configuration {
+  #  rule {
+  #    apply_server_side_encryption_by_default {
+  #      sse_algorithm = "AES256"
+  #    }
+  #  }
+  # }
 
-  versioning {
-    enabled = true
-  }
+  # versioning {
+  #   enabled = true
+  # }
 
-  logging {
-    target_bucket = var.log_archive_s3_bucket
-    target_prefix = "athena_maintenance_bucket/"
-  }
+  # logging {
+  #  target_bucket = var.log_archive_s3_bucket
+  #  target_prefix = "athena_maintenance_bucket/"
+  # }
 
   tags = {
     Name = "athena_maintenance_bucket_${local.naming_suffix}"
   }
+}
+
+resource "aws_s3_bucket_acl" "athena_maintenance_bucket_acl" {
+  bucket = var.athena_maintenance_bucket
+  acl    = var.athena_maintenance_acl
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "athena_maintenance_bucket_server_side_encryption_configuration" {
+  bucket = var.athena_maintenance_bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "athena_maintenance_bucket_versioning" {
+  bucket = var.athena_maintenance_bucket
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_logging" "athena_maintenance_bucket_logging" {
+  bucket = var.athena_maintenance_bucket
+
+  target_bucket = var.log_archive_s3_bucket
+  target_prefix = "athena_maintenance_bucket/"
 }
 
 resource "aws_s3_bucket_policy" "athena_maintenance_bucket" {
