@@ -61,7 +61,7 @@ resource "aws_s3_bucket_acl" "ops_config_bucket_acl" {
 }
 
 resource "aws_s3_bucket_policy" "ops_config_bucket" {
-  bucket = var.ops_config_bucket
+  bucket = aws_s3_bucket.ops_config_bucket.id
 
   policy = <<POLICY
 {
@@ -72,7 +72,7 @@ resource "aws_s3_bucket_policy" "ops_config_bucket" {
       "Effect": "Deny",
       "Principal": "*",
       "Action": "*",
-      "Resource": "arn:aws:s3:::${var.ops_config_bucket}/*",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.ops_config_bucket.id}/*",
       "Condition": {
         "Bool": {
           "aws:SecureTransport": "false"
@@ -87,7 +87,7 @@ POLICY
 
 resource "aws_s3_bucket" "athena_maintenance_bucket" {
   bucket = var.athena_maintenance_bucket
-  acl    = var.athena_maintenance_acl
+  # acl    = var.athena_maintenance_acl
   # region = var.region
 
   # server_side_encryption_configuration {
@@ -113,12 +113,12 @@ resource "aws_s3_bucket" "athena_maintenance_bucket" {
 }
 
 resource "aws_s3_bucket_acl" "athena_maintenance_bucket_acl" {
-  bucket = var.athena_maintenance_bucket
+  bucket = aws_s3_bucket.athena_maintenance_bucket.id
   acl    = var.athena_maintenance_acl
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "athena_maintenance_bucket_server_side_encryption_configuration" {
-  bucket = var.athena_maintenance_bucket
+  bucket = aws_s3_bucket.athena_maintenance_bucket.id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -128,21 +128,21 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "athena_maintenanc
 }
 
 resource "aws_s3_bucket_versioning" "athena_maintenance_bucket_versioning" {
-  bucket = var.athena_maintenance_bucket
+  bucket = aws_s3_bucket.athena_maintenance_bucket.id
   versioning_configuration {
     status = "Enabled"
   }
 }
 
 resource "aws_s3_bucket_logging" "athena_maintenance_bucket_logging" {
-  bucket = var.athena_maintenance_bucket
+  bucket = aws_s3_bucket.athena_maintenance_bucket.id
 
   target_bucket = var.log_archive_s3_bucket
   target_prefix = "athena_maintenance_bucket/"
 }
 
 resource "aws_s3_bucket_policy" "athena_maintenance_bucket" {
-  bucket = var.athena_maintenance_bucket
+  bucket = aws_s3_bucket.athena_maintenance_bucket.id
 
   policy = <<POLICY
 {
@@ -153,7 +153,7 @@ resource "aws_s3_bucket_policy" "athena_maintenance_bucket" {
       "Effect": "Deny",
       "Principal": "*",
       "Action": "*",
-      "Resource": "arn:aws:s3:::${var.athena_maintenance_bucket}/*",
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.athena_maintenance_bucket.id}/*",
       "Condition": {
         "Bool": {
           "aws:SecureTransport": "false"
